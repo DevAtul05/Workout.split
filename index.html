@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pro Snake Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle, #0f2027, #203a43, #2c5364);
+      font-family: 'Orbitron', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 32px;
+    }
+
+    #gameCanvas {
+      border: 3px solid #4caf50;
+      background-color: #000;
+      image-rendering: pixelated;
+    }
+
+    .scoreboard {
+      margin: 10px 0;
+      font-size: 20px;
+      display: flex;
+      justify-content: space-between;
+      width: 400px;
+    }
+
+    #restart-btn {
+      margin-top: 10px;
+      padding: 10px 25px;
+      font-size: 16px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      display: none;
+    }
+
+    #restart-btn:hover {
+      background: #388e3c;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Snake Game</h1>
+  <div class="scoreboard">
+    <span>Score: <span id="score">0</span></span>
+    <span>Best: <span id="best">0</span></span>
+  </div>
+  <canvas id="gameCanvas" width="400" height="400"></canvas>
+  <button id="restart-btn" onclick="restartGame()">Restart</button>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreDisplay = document.getElementById("score");
+    const bestDisplay = document.getElementById("best");
+    const restartBtn = document.getElementById("restart-btn");
+
+    const box = 20;
+    const canvasSize = 400;
+    let game, snake, food, direction, score, bestScore = localStorage.getItem("bestScore") || 0;
+
+    const appleImg = new Image();
+    appleImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/120px-Red_Apple.jpg";
+
+    function initGame() {
+      snake = [{ x: 9 * box, y: 9 * box }];
+      direction = null;
+      score = 0;
+      food = spawnFood();
+      updateScore();
+      restartBtn.style.display = "none";
+      if (game) clearInterval(game);
+      game = setInterval(draw, 120);
+    }
+
+    function spawnFood() {
+      return {
+        x: Math.floor(Math.random() * (canvasSize / box)) * box,
+        y: Math.floor(Math.random() * (canvasSize / box)) * box
+      };
+    }
+
+    function updateScore() {
+      scoreDisplay.textContent = score;
+      bestDisplay.textContent = bestScore;
+    }
+
+    function draw() {
+      ctx.fillStyle = "black";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? "lime" : "#76ff03";
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+        ctx.strokeStyle = "#111";
+        ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      ctx.drawImage(appleImg, food.x, food.y, box, box);
+
+      let headX = snake[0].x;
+      let headY = snake[0].y;
+
+      if (direction === "LEFT") headX -= box;
+      if (direction === "UP") headY -= box;
+      if (direction === "RIGHT") headX += box;
+      if (direction === "DOWN") headY += box;
+
+      if (headX === food.x && headY === food.y) {
+        score++;
+        food = spawnFood();
+      } else {
+        snake.pop();
+      }
+
+      const newHead = { x: headX, y: headY };
+
+      if (
+        headX < 0 || headX >= canvas.width ||
+        headY < 0 || headY >= canvas.height ||
+        snake.some(segment => segment.x === headX && segment.y === headY)
+      ) {
+        clearInterval(game);
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem("bestScore", bestScore);
+        }
+        updateScore();
+        restartBtn.style.display = "inline-block";
+        return;
+      }
+
+      snake.unshift(newHead);
+      updateScore();
+    }
+
+    function setDirection(e) {
+      const key = e.key;
+      if (key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      if (key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      if (key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      if (key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    }
+
+    function restartGame() {
+      initGame();
+    }
+
+    document.addEventListener("keydown", setDirection);
+    window.onload = initGame;
+  </script>
+</body>
+
+</html>
