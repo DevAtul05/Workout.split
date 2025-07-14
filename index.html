@@ -70,14 +70,6 @@
     .rotate {
       transform: rotate(180deg);
     }
-    footer {
-      margin-top: 40px;
-      text-align: center;
-      padding: 10px;
-      background: #f0f0f0;
-      font-size: 0.9rem;
-      color: #555;
-    }
   </style>
 </head>
 <body>
@@ -90,37 +82,51 @@
     <button onclick="showDay('day4')">🧱 Push B</button>
     <button onclick="showDay('day5')">🔁 Pull B</button>
     <button onclick="showDay('day6')">🦿 Legs B</button>
+    <button onclick="showDay('forearms')">✊ Forearms</button>
+    <button onclick="showDay('abs')">🧘 Abs</button>
   </div>
 
-  <div id="day1" class="day-section">
-    <h2>Day 1 – Push A (Chest, Shoulders, Triceps)</h2>
+  <div id="forearms" class="day-section">
+    <h2>✊ Forearm Workout</h2>
     <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Machine Chest Press <span class="arrow">▼</span></div>
-      <div class="exercise-info">4 sets x 10-12 reps. Great for targeting mid-chest with support.</div>
+      <div class="exercise-header">Wrist Curls <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 15-20 reps. Builds forearm mass.</div>
     </div>
     <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Dumbbell Shoulder Press <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 10 reps. Focuses on front and side delts.</div>
+      <div class="exercise-header">Reverse Curls <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 12 reps. Hits brachialis and brachioradialis.</div>
     </div>
     <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Pec Deck / Cable Fly <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 12-15 reps. Excellent chest finisher.</div>
+      <div class="exercise-header">Wrist Roller <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets. Improves endurance and thickness.</div>
     </div>
     <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Lateral Raises <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 15 reps. For rounder shoulders.</div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Overhead Triceps Extension <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 12 reps. Long head triceps builder.</div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Triceps Pushdown <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 12 reps. Focuses on triceps isolation.</div>
+      <div class="exercise-header">Farmer’s Walk <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 x 30s. Boosts grip strength and size.</div>
     </div>
   </div>
 
-  <!-- Additional Days (2 to 6) will be generated below -->
+  <div id="abs" class="day-section">
+    <h2>🧘 Abs Workout</h2>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Hanging Leg Raises <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 15 reps. Great lower ab builder.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Cable Crunch <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 15 reps. Upper ab isolation.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Plank <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 60s. Builds core stability.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Russian Twists <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 20 reps. Engages obliques.</div>
+    </div>
+  </div>
+
+  <!-- Existing workout script remains unchanged -->
   <script>
     const dayData = {
       day2: [
@@ -164,7 +170,7 @@
         ['Hanging Leg Raises / Cable Crunch', '3 x 15', 'Targets abs.'],
         ['Standing Calf Raise', '3 x 20', 'Calf burnout.']
       ]
-    }
+    };
 
     Object.keys(dayData).forEach(day => {
       const container = document.createElement('div');
@@ -198,9 +204,5 @@
       }
     }
   </script>
-
-  <footer>
-    Designed by <strong>YourName</strong> | 💪 Stay consistent and train smart!
-  </footer>
 </body>
 </html>
