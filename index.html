@@ -1,178 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pro Snake Game</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <title>PPL Gym Split</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
-      background: radial-gradient(circle, #0f2027, #203a43, #2c5364);
-      font-family: 'Orbitron', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      color: #fff;
-      overflow: hidden;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #fff;
+      color: #000;
     }
-
-    h1 {
-      margin-bottom: 10px;
-      font-size: 32px;
-    }
-
-    #gameCanvas {
-      border: 3px solid #4caf50;
+    header {
       background-color: #000;
-      image-rendering: pixelated;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      font-size: 2rem;
     }
-
-    .scoreboard {
-      margin: 10px 0;
-      font-size: 20px;
+    .day-buttons {
       display: flex;
-      justify-content: space-between;
-      width: 400px;
+      overflow-x: auto;
+      background-color: #f0f0f0;
+      padding: 10px;
+      gap: 10px;
+      justify-content: center;
     }
-
-    #restart-btn {
-      margin-top: 10px;
-      padding: 10px 25px;
-      font-size: 16px;
-      background: #4caf50;
-      color: white;
+    .day-buttons button {
+      flex-shrink: 0;
+      background-color: #000;
+      color: #fff;
       border: none;
+      padding: 10px 20px;
       border-radius: 5px;
       cursor: pointer;
       transition: 0.3s;
-      display: none;
     }
-
-    #restart-btn:hover {
-      background: #388e3c;
+    .day-buttons button:hover {
+      background-color: #333;
+    }
+    .day-section {
+      display: none;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .exercise {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #f9f9f9;
+    }
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .exercise-info {
+      display: none;
+      margin-top: 10px;
+      color: #333;
+    }
+    .arrow {
+      font-size: 1.2rem;
+      transition: transform 0.3s;
+    }
+    .rotate {
+      transform: rotate(180deg);
     }
   </style>
 </head>
-
 <body>
-  <h1>Snake Game</h1>
-  <div class="scoreboard">
-    <span>Score: <span id="score">0</span></span>
-    <span>Best: <span id="best">0</span></span>
+  <header>Push Pull Legs Workout Split</header>
+
+  <div class="day-buttons">
+    <button onclick="showDay('day1')">💪 Push A</button>
+    <button onclick="showDay('day2')">💪 Pull A</button>
+    <button onclick="showDay('day3')">🦵 Legs A</button>
+    <button onclick="showDay('day4')">🧱 Push B</button>
+    <button onclick="showDay('day5')">🔁 Pull B</button>
+    <button onclick="showDay('day6')">🦿 Legs B</button>
   </div>
-  <canvas id="gameCanvas" width="400" height="400"></canvas>
-  <button id="restart-btn" onclick="restartGame()">Restart</button>
 
+  <div id="day1" class="day-section">
+    <h2>Day 1 – Push A (Chest, Shoulders, Triceps)</h2>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Machine Chest Press <span class="arrow">▼</span></div>
+      <div class="exercise-info">4 sets x 10-12 reps. Great for targeting mid-chest with support.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Dumbbell Shoulder Press <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 10 reps. Focuses on front and side delts.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Pec Deck / Cable Fly <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 12-15 reps. Excellent chest finisher.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Lateral Raises <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 15 reps. For rounder shoulders.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Overhead Triceps Extension <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 12 reps. Long head triceps builder.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Triceps Pushdown <span class="arrow">▼</span></div>
+      <div class="exercise-info">3 sets x 12 reps. Focuses on triceps isolation.</div>
+    </div>
+  </div>
+
+  <!-- Additional Days (2 to 6) will be generated below -->
   <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const scoreDisplay = document.getElementById("score");
-    const bestDisplay = document.getElementById("best");
-    const restartBtn = document.getElementById("restart-btn");
-
-    const box = 20;
-    const canvasSize = 400;
-    let game, snake, food, direction, score, bestScore = localStorage.getItem("bestScore") || 0;
-
-    const appleImg = new Image();
-    appleImg.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Red_Apple.jpg/120px-Red_Apple.jpg";
-
-    function initGame() {
-      snake = [{ x: 9 * box, y: 9 * box }];
-      direction = null;
-      score = 0;
-      food = spawnFood();
-      updateScore();
-      restartBtn.style.display = "none";
-      if (game) clearInterval(game);
-      game = setInterval(draw, 120);
+    const dayData = {
+      day2: [
+        ['Lat Pulldown (Wide Grip)', '4 x 10-12', 'Targets upper lats and width.'],
+        ['Seated Cable Row', '3 x 10', 'For mid-back thickness.'],
+        ['Barbell or Dumbbell Bicep Curls', '4 x 10-12', 'Classic biceps movement.'],
+        ['Preacher Curl', '3 x 12', 'Isolates biceps peak.'],
+        ['Wrist Curls', '3 x 15-20', 'Builds forearm mass.'],
+        ['Reverse Curls', '3 x 12', 'Targets brachialis and forearms.'],
+        ['Farmer’s Walk', '3 x 30s', 'Improves grip and forearm size.']
+      ],
+      day3: [
+        ['Leg Press', '4 x 12', 'Quad dominant leg exercise.'],
+        ['Walking Lunges / Bulgarian Split Squat', '3 x 12/leg', 'For balance and unilateral strength.'],
+        ['Leg Extension', '3 x 15', 'Isolates quads.'],
+        ['Standing Calf Raises', '3 x 15-20', 'Targets gastrocnemius.'],
+        ['Seated Calf Raises', '3 x 15-20', 'Targets soleus muscle.']
+      ],
+      day4: [
+        ['Incline Dumbbell/Machine Press', '4 x 10-12', 'Focuses on upper chest.'],
+        ['Dumbbell Lateral Raises', '3 x 15', 'Side delts for width.'],
+        ['Arnold Press / Machine Shoulder Press', '3 x 10', 'Shoulder compound lift.'],
+        ['Chest Fly (Cable or Pec Deck)', '3 x 12-15', 'For chest isolation.'],
+        ['Close-Grip Push-Ups or Dips', '3 x 10-12', 'Triceps and inner chest.'],
+        ['Rope Triceps Pushdown', '3 x 12', 'Great for triceps finish.']
+      ],
+      day5: [
+        ['Close-Grip Lat Pulldown', '4 x 10', 'Back thickness focus.'],
+        ['T-Bar Row / Chest-Supported Row', '3 x 10', 'Targets rhomboids and lats.'],
+        ['Hammer Curls', '3 x 12', 'For forearms and biceps.'],
+        ['Concentration Curls', '3 x 12', 'Focuses on biceps peak.'],
+        ['Wrist Roller or Plate Pinch Holds', '3 sets', 'Forearm endurance.'],
+        ['Reverse Curls', '3 x 12', 'Hits brachioradialis.'],
+        ['Hanging (Dead Hangs)', '2 x 30s', 'Grip and spinal decompression.']
+      ],
+      day6: [
+        ['Romanian Deadlift', '4 x 10-12', 'Targets hamstrings and glutes.'],
+        ['Glute Kickbacks', '3 x 15/leg', 'Builds glutes.'],
+        ['Seated Leg Curl', '3 x 12', 'Hamstring isolation.'],
+        ['Hip Thrust', '3 x 10-12', 'Max glute contraction.'],
+        ['Hanging Leg Raises / Cable Crunch', '3 x 15', 'Targets abs.'],
+        ['Standing Calf Raise', '3 x 20', 'Calf burnout.']
+      ]
     }
 
-    function spawnFood() {
-      return {
-        x: Math.floor(Math.random() * (canvasSize / box)) * box,
-        y: Math.floor(Math.random() * (canvasSize / box)) * box
-      };
+    Object.keys(dayData).forEach(day => {
+      const container = document.createElement('div');
+      container.id = day;
+      container.className = 'day-section';
+      container.innerHTML = `<h2>${document.querySelector(`[onclick="showDay('${day}')"]`).textContent}</h2>`;
+      dayData[day].forEach(([name, reps, desc]) => {
+        container.innerHTML += `
+        <div class="exercise" onclick="toggleInfo(this)">
+          <div class="exercise-header">${name} <span class="arrow">▼</span></div>
+          <div class="exercise-info">${reps}. ${desc}</div>
+        </div>`;
+      });
+      document.body.appendChild(container);
+    });
+
+    function showDay(id) {
+      document.querySelectorAll('.day-section').forEach(sec => sec.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
     }
 
-    function updateScore() {
-      scoreDisplay.textContent = score;
-      bestDisplay.textContent = bestScore;
-    }
-
-    function draw() {
-      ctx.fillStyle = "black";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      for (let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = i === 0 ? "lime" : "#76ff03";
-        ctx.fillRect(snake[i].x, snake[i].y, box, box);
-        ctx.strokeStyle = "#111";
-        ctx.strokeRect(snake[i].x, snake[i].y, box, box);
+    function toggleInfo(el) {
+      const info = el.querySelector('.exercise-info');
+      const arrow = el.querySelector('.arrow');
+      const shown = info.style.display === 'block';
+      document.querySelectorAll('.exercise-info').forEach(i => i.style.display = 'none');
+      document.querySelectorAll('.arrow').forEach(a => a.classList.remove('rotate'));
+      if (!shown) {
+        info.style.display = 'block';
+        arrow.classList.add('rotate');
       }
-
-      ctx.drawImage(appleImg, food.x, food.y, box, box);
-
-      let headX = snake[0].x;
-      let headY = snake[0].y;
-
-      if (direction === "LEFT") headX -= box;
-      if (direction === "UP") headY -= box;
-      if (direction === "RIGHT") headX += box;
-      if (direction === "DOWN") headY += box;
-
-      if (headX === food.x && headY === food.y) {
-        score++;
-        food = spawnFood();
-      } else {
-        snake.pop();
-      }
-
-      const newHead = { x: headX, y: headY };
-
-      if (
-        headX < 0 || headX >= canvas.width ||
-        headY < 0 || headY >= canvas.height ||
-        snake.some(segment => segment.x === headX && segment.y === headY)
-      ) {
-        clearInterval(game);
-        if (score > bestScore) {
-          bestScore = score;
-          localStorage.setItem("bestScore", bestScore);
-        }
-        updateScore();
-        restartBtn.style.display = "inline-block";
-        return;
-      }
-
-      snake.unshift(newHead);
-      updateScore();
     }
-
-    function setDirection(e) {
-      const key = e.key;
-      if (key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
-      if (key === "ArrowUp" && direction !== "DOWN") direction = "UP";
-      if (key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
-      if (key === "ArrowDown" && direction !== "UP") direction = "DOWN";
-    }
-
-    function restartGame() {
-      initGame();
-    }
-
-    document.addEventListener("keydown", setDirection);
-    window.onload = initGame;
   </script>
 </body>
-
 </html>
