@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PPL Gym Split</title>
   <style>
     body {
@@ -10,6 +10,9 @@
       font-family: 'Segoe UI', sans-serif;
       background-color: #fff;
       color: #000;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
     header {
       background-color: #000;
@@ -70,6 +73,21 @@
     .rotate {
       transform: rotate(180deg);
     }
+    footer {
+      margin-top: auto;
+      background-color: #000;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+    img.exercise-img {
+      width: 100%;
+      max-width: 300px;
+      margin-top: 10px;
+      border-radius: 8px;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -90,108 +108,47 @@
     <h2>✊ Forearm Workout</h2>
     <div class="exercise" onclick="toggleInfo(this)">
       <div class="exercise-header">Wrist Curls <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 15-20 reps. Builds forearm mass.</div>
+      <div class="exercise-info">
+        3 sets x 15-20 reps. Builds forearm mass.
+        <img class="exercise-img" src="https://via.placeholder.com/300x200?text=Wrist+Curls" alt="Wrist Curls">
+      </div>
     </div>
     <div class="exercise" onclick="toggleInfo(this)">
       <div class="exercise-header">Reverse Curls <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 12 reps. Hits brachialis and brachioradialis.</div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Wrist Roller <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets. Improves endurance and thickness.</div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Farmer’s Walk <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 x 30s. Boosts grip strength and size.</div>
+      <div class="exercise-info">
+        3 sets x 12 reps. Hits brachialis and brachioradialis.
+        <img class="exercise-img" src="https://via.placeholder.com/300x200?text=Reverse+Curls" alt="Reverse Curls">
+      </div>
     </div>
   </div>
 
   <div id="abs" class="day-section">
     <h2>🧘 Abs Workout</h2>
     <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Hanging Leg Raises <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 15 reps. Great lower ab builder.</div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
       <div class="exercise-header">Cable Crunch <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 15 reps. Upper ab isolation.</div>
+      <div class="exercise-info">
+        3 sets x 15 reps. Upper ab isolation.
+        <img class="exercise-img" src="https://via.placeholder.com/300x200?text=Cable+Crunch" alt="Cable Crunch">
+      </div>
     </div>
     <div class="exercise" onclick="toggleInfo(this)">
       <div class="exercise-header">Plank <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 60s. Builds core stability.</div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Russian Twists <span class="arrow">▼</span></div>
-      <div class="exercise-info">3 sets x 20 reps. Engages obliques.</div>
+      <div class="exercise-info">
+        3 sets x 60s. Builds core stability.
+        <img class="exercise-img" src="https://via.placeholder.com/300x200?text=Plank" alt="Plank">
+      </div>
     </div>
   </div>
 
-  <!-- Existing workout script remains unchanged -->
+  <footer>
+    Designed by Atul 💪
+  </footer>
+
   <script>
-    const dayData = {
-      day2: [
-        ['Lat Pulldown (Wide Grip)', '4 x 10-12', 'Targets upper lats and width.'],
-        ['Seated Cable Row', '3 x 10', 'For mid-back thickness.'],
-        ['Barbell or Dumbbell Bicep Curls', '4 x 10-12', 'Classic biceps movement.'],
-        ['Preacher Curl', '3 x 12', 'Isolates biceps peak.'],
-        ['Wrist Curls', '3 x 15-20', 'Builds forearm mass.'],
-        ['Reverse Curls', '3 x 12', 'Targets brachialis and forearms.'],
-        ['Farmer’s Walk', '3 x 30s', 'Improves grip and forearm size.']
-      ],
-      day3: [
-        ['Leg Press', '4 x 12', 'Quad dominant leg exercise.'],
-        ['Walking Lunges / Bulgarian Split Squat', '3 x 12/leg', 'For balance and unilateral strength.'],
-        ['Leg Extension', '3 x 15', 'Isolates quads.'],
-        ['Standing Calf Raises', '3 x 15-20', 'Targets gastrocnemius.'],
-        ['Seated Calf Raises', '3 x 15-20', 'Targets soleus muscle.']
-      ],
-      day4: [
-        ['Incline Dumbbell/Machine Press', '4 x 10-12', 'Focuses on upper chest.'],
-        ['Dumbbell Lateral Raises', '3 x 15', 'Side delts for width.'],
-        ['Arnold Press / Machine Shoulder Press', '3 x 10', 'Shoulder compound lift.'],
-        ['Chest Fly (Cable or Pec Deck)', '3 x 12-15', 'For chest isolation.'],
-        ['Close-Grip Push-Ups or Dips', '3 x 10-12', 'Triceps and inner chest.'],
-        ['Rope Triceps Pushdown', '3 x 12', 'Great for triceps finish.']
-      ],
-      day5: [
-        ['Close-Grip Lat Pulldown', '4 x 10', 'Back thickness focus.'],
-        ['T-Bar Row / Chest-Supported Row', '3 x 10', 'Targets rhomboids and lats.'],
-        ['Hammer Curls', '3 x 12', 'For forearms and biceps.'],
-        ['Concentration Curls', '3 x 12', 'Focuses on biceps peak.'],
-        ['Wrist Roller or Plate Pinch Holds', '3 sets', 'Forearm endurance.'],
-        ['Reverse Curls', '3 x 12', 'Hits brachioradialis.'],
-        ['Hanging (Dead Hangs)', '2 x 30s', 'Grip and spinal decompression.']
-      ],
-      day6: [
-        ['Romanian Deadlift', '4 x 10-12', 'Targets hamstrings and glutes.'],
-        ['Glute Kickbacks', '3 x 15/leg', 'Builds glutes.'],
-        ['Seated Leg Curl', '3 x 12', 'Hamstring isolation.'],
-        ['Hip Thrust', '3 x 10-12', 'Max glute contraction.'],
-        ['Hanging Leg Raises / Cable Crunch', '3 x 15', 'Targets abs.'],
-        ['Standing Calf Raise', '3 x 20', 'Calf burnout.']
-      ]
-    };
-
-    Object.keys(dayData).forEach(day => {
-      const container = document.createElement('div');
-      container.id = day;
-      container.className = 'day-section';
-      container.innerHTML = `<h2>${document.querySelector(`[onclick="showDay('${day}')"]`).textContent}</h2>`;
-      dayData[day].forEach(([name, reps, desc]) => {
-        container.innerHTML += `
-        <div class="exercise" onclick="toggleInfo(this)">
-          <div class="exercise-header">${name} <span class="arrow">▼</span></div>
-          <div class="exercise-info">${reps}. ${desc}</div>
-        </div>`;
-      });
-      document.body.appendChild(container);
-    });
-
     function showDay(id) {
       document.querySelectorAll('.day-section').forEach(sec => sec.style.display = 'none');
       document.getElementById(id).style.display = 'block';
     }
-
     function toggleInfo(el) {
       const info = el.querySelector('.exercise-info');
       const arrow = el.querySelector('.arrow');
