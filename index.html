@@ -3,183 +3,204 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>150g Veg Protein Diet Plan</title>
+  <title>PPL Workout Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-      background-color: #f9f9f9;
-      color: #333;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #2e7d32;
-    }
-    .tabs {
-      display: flex;
-      overflow-x: auto;
-      margin-bottom: 20px;
-    }
-    .tab-button {
-      flex: none;
-      margin-right: 10px;
-      padding: 10px 20px;
-      border: 1px solid #2e7d32;
-      background-color: white;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-    .tab-button.active {
-      background-color: #2e7d32;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
-    .card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      padding: 20px;
-      margin-bottom: 30px;
+
+    header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
     }
-    ul {
-      list-style-type: disc;
-      padding-left: 20px;
+
+    header h1 {
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
     }
-    .tip {
-      color: #388e3c;
-      font-style: italic;
-      margin-top: 10px;
+
+    .day-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .day-buttons button {
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      color: white;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
+
+    .day-buttons button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    }
+
+    .day-section {
+      display: none;
+      max-width: 900px;
+      margin: auto;
+      padding: 2rem;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .exercise {
+      background: rgba(255,255,255,0.1);
+      padding: 1rem;
+      border-radius: 15px;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .exercise:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+    }
+
+    .arrow {
+      transition: transform 0.3s;
+    }
+
+    .rotate {
+      transform: rotate(180deg);
+    }
+
+    .exercise-info {
+      display: none;
+      padding-top: 0.5rem;
+      color: #f0f0f0;
+    }
+
+    footer {
+      margin-top: auto;
+      text-align: center;
+      padding: 1rem;
+      background: rgba(0,0,0,0.2);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 2rem; }
+      .day-buttons button { font-size: 1rem; padding: 0.8rem 1.5rem; }
     }
   </style>
 </head>
 <body>
-  <h1>🌿 150g Veg Protein Diet Plan</h1>
-  <div class="tabs" id="tabs"></div>
-  <div id="content"></div>
+  <header>
+    <h1>🏋️ Push Pull Legs Workout Guide</h1>
+    <p style="opacity: 0.8;">Your Ultimate Muscle-Building Split</p>
+  </header>
 
-  <h2>✅ Pro Tips for Vegetarians</h2>
-  <ul>
-    <li>Focus on tofu, paneer, lentils, sprouts, and plant protein.</li>
-    <li>Use plant protein powder to close protein gaps.</li>
-    <li>Avoid processed foods, excess sugar, or fried snacks.</li>
-    <li>Drink 2.5–3L of water daily.</li>
-    <li>Stick to meal timing to support muscle repair & fat loss.</li>
-    <li>Tofu > Paneer for lower fat & higher protein.</li>
-    <li>Don’t skip post-workout protein within 30–60 minutes.</li>
-  </ul>
+  <div class="day-buttons">
+    <button onclick="showDay('pushA')">💪 Push</button>
+    <button onclick="showDay('pullA')">🔄 Pull</button>
+    <button onclick="showDay('legsA')">🦵 Legs</button>
+    <button onclick="showDay('forearms')">✊ Forearms</button>
+    <button onclick="showDay('abs')">🧘 Abs</button>
+  </div>
 
-  <h2>📊 Daily Summary</h2>
-  <ul>
-    <li><strong>Protein:</strong> 150g</li>
-    <li><strong>Calories:</strong> 2300–2500 kcal</li>
-    <li><strong>Carbs:</strong> Moderate</li>
-    <li><strong>Fats:</strong> Healthy (almonds, peanuts, etc.)</li>
-  </ul>
+  <div id="pushA" class="day-section">
+    <h2>💪 Push A (Chest, Shoulders, Triceps)</h2>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Machine Chest Press <span class="arrow">▼</span></div><div class="exercise-info">4 sets x 10-12 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Incline Dumbbell Press <span class="arrow">▼</span></div><div class="exercise-info">4 sets x 8-10 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Dumbbell Shoulder Press <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 10 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Cable Fly / Pec Deck <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 12-15 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Lateral Raises <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 15 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Overhead Triceps Extension <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 12 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Triceps Pushdown <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 12 reps</div></div>
+  </div>
+
+  <div id="pullA" class="day-section">
+    <h2>🔄 Pull A (Back, Biceps)</h2>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Lat Pulldown <span class="arrow">▼</span></div><div class="exercise-info">4 sets x 10-12 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Seated Cable Row <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 10-12 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Straight-Arm Pulldown <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 12-15 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Barbell Curl <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 10-12 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Incline Dumbbell Curl <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 12 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Hammer Curl <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 12 reps</div></div>
+  </div>
+
+  <div id="legsA" class="day-section">
+    <h2>🦵 Legs A (Quads, Glutes, Calves)</h2>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Leg Press <span class="arrow">▼</span></div><div class="exercise-info">4 sets x 12 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Bulgarian Split Squats <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 10 each leg</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Leg Extension <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 15 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Walking Lunges <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 12 steps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Standing Calf Raises <span class="arrow">▼</span></div><div class="exercise-info">4 sets x 15 reps</div></div>
+  </div>
+
+  <div id="forearms" class="day-section">
+    <h2>✊ Forearms</h2>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Wrist Curls <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 15-20 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Reverse Curls <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 12 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Farmer’s Walk <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 30s</div></div>
+  </div>
+
+  <div id="abs" class="day-section">
+    <h2>🧘 Abs</h2>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Cable Crunch <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 15 reps</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Plank <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 60s</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Hanging Leg Raise <span class="arrow">▼</span></div><div class="exercise-info">3 sets x 15 reps</div></div>
+  </div>
+
+  <footer>
+    Designed by Atul 💪 | Powered by Fitness & Code
+  </footer>
 
   <script>
-    const meals = [
-      {
-        time: "Pre-Workout",
-        timeLabel: "4:30 AM",
-        items: [
-          "6 soaked almonds",
-          "1 banana",
-          "Black coffee",
-          "½ scoop plant protein (Optional) – 10g protein"
-        ],
-        tip: "Provides quick energy & protein to prevent muscle breakdown."
-      },
-      {
-        time: "Post-Workout Breakfast",
-        timeLabel: "6:30 AM",
-        items: [
-          "5 egg whites (or 100g tofu)",
-          "2 multigrain bread slices + 1 tbsp peanut butter",
-          "Besan chilla 2"
-        ],
-        tip: "High-protein recovery to fuel muscle repair."
-      },
-      {
-        time: "Mid-Morning",
-        timeLabel: "10:00 AM",
-        items: [
-          "1 cup mixed sprouts salad with veggies",
-          "1 apple or orange",
-          "100g low-fat paneer"
-        ],
-        tip: "Light, high-protein meal with fiber."
-      },
-      {
-        time: "Lunch",
-        timeLabel: "1:00 PM",
-        items: [
-          "3 rotis or 1.5 cups rice",
-          "1 cup dal or chole/rajma",
-          "Mix veg or soyabean curry",
-          "Salad + 200ml curd"
-        ],
-        tip: "Balanced full meal with complex carbs & plant proteins."
-      },
-      {
-        time: "Evening Snack",
-        timeLabel: "4:00 PM",
-        items: [
-          "Roasted chana or protein bar (~10g protein)",
-          "Buttermilk or green tea",
-          "Handful of peanuts"
-        ],
-        tip: "Pre-dinner protein with healthy fats and no sugar crash."
-      },
-      {
-        time: "Dinner",
-        timeLabel: "7–8 PM",
-        items: [
-          "2 rotis + sabzi",
-          "100g tofu or paneer",
-          "1 bowl dal or chickpeas",
-          "Salad or boiled veggies"
-        ],
-        tip: "Light but protein-rich to end the day strong."
-      },
-      {
-        time: "Before Bed",
-        timeLabel: "Optional",
-        items: [
-          "½ scoop plant protein or warm soy milk – 10g protein"
-        ],
-        tip: "Slow-digesting protein to avoid muscle loss overnight."
-      }
-    ];
-
-    const tabs = document.getElementById('tabs');
-    const content = document.getElementById('content');
-
-    function renderMeal(meal) {
-      content.innerHTML = `
-        <div class="card">
-          <h2>${meal.time} <span style="font-size: 14px; color: #666;">(${meal.timeLabel})</span></h2>
-          <ul>${meal.items.map(item => `<li>${item}</li>`).join('')}</ul>
-          <p class="tip">💡 ${meal.tip}</p>
-        </div>
-      `;
+    function showDay(id) {
+      document.querySelectorAll('.day-section').forEach(section => section.style.display = 'none');
+      const active = document.getElementById(id);
+      if (active) active.style.display = 'block';
     }
 
-    meals.forEach((meal, index) => {
-      const button = document.createElement('button');
-      button.className = 'tab-button';
-      button.textContent = meal.time;
-      button.onclick = () => {
-        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        renderMeal(meal);
-      };
-      tabs.appendChild(button);
-      if (index === 0) {
-        button.classList.add('active');
-        renderMeal(meal);
+    function toggleInfo(el) {
+      const info = el.querySelector('.exercise-info');
+      const arrow = el.querySelector('.arrow');
+      const isShown = info.style.display === 'block';
+      document.querySelectorAll('.exercise-info').forEach(i => i.style.display = 'none');
+      document.querySelectorAll('.arrow').forEach(a => a.classList.remove('rotate'));
+      if (!isShown) {
+        info.style.display = 'block';
+        arrow.classList.add('rotate');
       }
-    });
+    }
+
+    showDay('pushA');
   </script>
 </body>
 </html>
