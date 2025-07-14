@@ -81,13 +81,6 @@
       padding: 10px;
       font-size: 0.9rem;
     }
-    img.exercise-img {
-      width: 100%;
-      max-width: 300px;
-      margin-top: 10px;
-      border-radius: 8px;
-      display: block;
-    }
   </style>
 </head>
 <body>
@@ -105,51 +98,29 @@
   </div>
 
   <div id="pushA" class="day-section">
-    <h2>💪 Push A</h2>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Bench Press <span class="arrow">▼</span></div>
-      <div class="exercise-info">4 sets x 10 reps. Builds chest strength.</div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Shoulder Press <span class="arrow">▼</span></div>
-      <div class="exercise-info">4 sets x 10 reps. Targets delts and triceps.</div>
-    </div>
+    <h2>💪 Push A (Chest, Shoulders, Triceps)</h2>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Machine Chest Press <span class="arrow">▼</span></div><div class="exercise-info">4 x 10-12</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Dumbbell Shoulder Press <span class="arrow">▼</span></div><div class="exercise-info">3 x 10</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Pec Deck Machine / Cable Fly <span class="arrow">▼</span></div><div class="exercise-info">3 x 12-15</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Lateral Raises (Cable or Dumbbell) <span class="arrow">▼</span></div><div class="exercise-info">3 x 15</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Overhead Triceps Extension (Cable) <span class="arrow">▼</span></div><div class="exercise-info">3 x 12</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Triceps Pushdown <span class="arrow">▼</span></div><div class="exercise-info">3 x 12</div></div>
   </div>
+
+  <!-- Additional sections (pullA, legsA, pushB, etc.) will be added here -->
 
   <div id="forearms" class="day-section">
     <h2>✊ Forearm Workout</h2>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Wrist Curls <span class="arrow">▼</span></div>
-      <div class="exercise-info">
-        3 sets x 15-20 reps. Builds forearm mass.
-        <img class="exercise-img" src="https://via.placeholder.com/300x200?text=Wrist+Curls" alt="Wrist Curls">
-      </div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Reverse Curls <span class="arrow">▼</span></div>
-      <div class="exercise-info">
-        3 sets x 12 reps. Hits brachialis and brachioradialis.
-        <img class="exercise-img" src="https://via.placeholder.com/300x200?text=Reverse+Curls" alt="Reverse Curls">
-      </div>
-    </div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Wrist Curls <span class="arrow">▼</span></div><div class="exercise-info">3 x 15-20</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Reverse Curls <span class="arrow">▼</span></div><div class="exercise-info">3 x 12</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Farmer’s Walk <span class="arrow">▼</span></div><div class="exercise-info">3 x 30s</div></div>
   </div>
 
   <div id="abs" class="day-section">
     <h2>🧘 Abs Workout</h2>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Cable Crunch <span class="arrow">▼</span></div>
-      <div class="exercise-info">
-        3 sets x 15 reps. Upper ab isolation.
-        <img class="exercise-img" src="https://via.placeholder.com/300x200?text=Cable+Crunch" alt="Cable Crunch">
-      </div>
-    </div>
-    <div class="exercise" onclick="toggleInfo(this)">
-      <div class="exercise-header">Plank <span class="arrow">▼</span></div>
-      <div class="exercise-info">
-        3 sets x 60s. Builds core stability.
-        <img class="exercise-img" src="https://via.placeholder.com/300x200?text=Plank" alt="Plank">
-      </div>
-    </div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Cable Crunch <span class="arrow">▼</span></div><div class="exercise-info">3 x 15</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Plank <span class="arrow">▼</span></div><div class="exercise-info">3 x 60s</div></div>
+    <div class="exercise" onclick="toggleInfo(this)"><div class="exercise-header">Hanging Leg Raise <span class="arrow">▼</span></div><div class="exercise-info">3 x 15</div></div>
   </div>
 
   <footer>
