@@ -94,14 +94,26 @@
   <header>Push Pull Legs Workout Split</header>
 
   <div class="day-buttons">
-    <button onclick="showDay('day1')">💪 Push A</button>
-    <button onclick="showDay('day2')">💪 Pull A</button>
-    <button onclick="showDay('day3')">🦵 Legs A</button>
-    <button onclick="showDay('day4')">🧱 Push B</button>
-    <button onclick="showDay('day5')">🔁 Pull B</button>
-    <button onclick="showDay('day6')">🦿 Legs B</button>
+    <button onclick="showDay('pushA')">💪 Push A</button>
+    <button onclick="showDay('pullA')">💪 Pull A</button>
+    <button onclick="showDay('legsA')">🦵 Legs A</button>
+    <button onclick="showDay('pushB')">🧱 Push B</button>
+    <button onclick="showDay('pullB')">🔁 Pull B</button>
+    <button onclick="showDay('legsB')">🦿 Legs B</button>
     <button onclick="showDay('forearms')">✊ Forearms</button>
     <button onclick="showDay('abs')">🧘 Abs</button>
+  </div>
+
+  <div id="pushA" class="day-section">
+    <h2>💪 Push A</h2>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Bench Press <span class="arrow">▼</span></div>
+      <div class="exercise-info">4 sets x 10 reps. Builds chest strength.</div>
+    </div>
+    <div class="exercise" onclick="toggleInfo(this)">
+      <div class="exercise-header">Shoulder Press <span class="arrow">▼</span></div>
+      <div class="exercise-info">4 sets x 10 reps. Targets delts and triceps.</div>
+    </div>
   </div>
 
   <div id="forearms" class="day-section">
@@ -147,8 +159,10 @@
   <script>
     function showDay(id) {
       document.querySelectorAll('.day-section').forEach(sec => sec.style.display = 'none');
-      document.getElementById(id).style.display = 'block';
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'block';
     }
+
     function toggleInfo(el) {
       const info = el.querySelector('.exercise-info');
       const arrow = el.querySelector('.arrow');
