@@ -1,478 +1,577 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PPL Workout Guide</title>
-  <link rel="icon" type="image/png" href="favicon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
-  <!-- rest of your styles... -->
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    header {
-      text-align: center;
-      padding: 2rem 1rem 1rem;
-    }
-
-    header h1 {
-      font-size: 2.5rem;
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-    }
-
-    .day-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .day-buttons button {
-      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
-      border: none;
-      padding: 1rem 2rem;
-      font-size: 1.1rem;
-      color: white;
-      border-radius: 15px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      transition: 0.3s;
-    }
-
-    .day-buttons button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-    }
-
-    .day-section {
-      display: none;
-      max-width: 900px;
-      margin: auto;
-      padding: 2rem;
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .exercise {
-      background: rgba(255,255,255,0.1);
-      padding: 1rem;
-      border-radius: 15px;
-      margin-bottom: 1rem;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .exercise:hover {
-      background: rgba(255,255,255,0.2);
-    }
-
-    .exercise-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: bold;
-    }
-
-    .arrow {
-      transition: transform 0.3s;
-    }
-
-    .rotate {
-      transform: rotate(180deg);
-    }
-
-    .exercise-info {
-      display: none;
-      padding-top: 0.5rem;
-      color: #f0f0f0;
-    }
-
-    footer {
-      margin-top: auto;
-      text-align: center;
-      padding: 1rem;
-      background: rgba(0,0,0,0.2);
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 600px) {
-      header h1 { font-size: 2rem; }
-      .day-buttons button { font-size: 1rem; padding: 0.8rem 1.5rem; }
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Colorful Dino Runner — Chrome-like</title>
+<style>
+  :root{
+    --bg-day: #f7fbff;
+    --bg-night: #0b1220;
+    --ground-day: #e9eef3;
+    --ground-night: #0e1724;
+    --dino: #111827;
+    --accent: #ff7a18;
+    --text: #0f1724;
+  }
+  html,body{height:100%;margin:0;background:var(--bg-day);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--text);display:flex;align-items:center;justify-content:center;}
+  .wrap{width:100%;max-width:1100px;margin:20px;position:relative;}
+  canvas{display:block;width:100%;height:360px;border-radius:12px;box-shadow:0 12px 40px rgba(2,6,23,0.08);background:linear-gradient(180deg,var(--bg-day),#dfeefb);}
+  .ui{position:absolute;left:18px;top:14px;z-index:20;display:flex;gap:10px;align-items:center;}
+  .score{background:rgba(255,255,255,0.9);padding:6px 10px;border-radius:10px;font-weight:700;color:#0b1220;border:1px solid rgba(0,0,0,0.04);}
+  .controls{position:absolute;right:18px;top:14px;display:flex;gap:8px;align-items:center;}
+  .btn{background:#111;color:#fff;padding:6px 10px;border-radius:8px;border:0;font-weight:700;cursor:pointer;}
+  .hint{position:absolute;left:50%;transform:translateX(-50%);bottom:12px;background:rgba(255,255,255,0.9);padding:8px 12px;border-radius:10px;font-weight:600;border:1px solid rgba(0,0,0,0.04);}
+  .overlay{position:absolute;left:0;right:0;top:0;bottom:0;display:grid;place-items:center;pointer-events:none}
+  .overlay .panel{pointer-events:auto;background:rgba(255,255,255,0.98);padding:18px 22px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 12px 30px rgba(2,6,23,0.06)}
+  @media (max-width:600px){
+    canvas{height:260px;}
+    .hint{font-size:13px}
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>🏋️ Push Pull Legs Workout Guide</h1>
-    <p style="opacity: 0.8;">Your Ultimate Muscle-Building Split</p>
-  </header>
-
-  <div class="day-buttons">
-    <button onclick="showDay('pushA')">💪 Push</button>
-    <button onclick="showDay('pullA')">🔄 Pull</button>
-    <button onclick="showDay('legsA')">🦵 Legs</button>
-    <button onclick="showDay('forearms')">✊ Forearms</button>
-    <button onclick="showDay('abs')">🧘 Abs</button>
-  </div>
-
-<div id="pushA" class="day-section">
-  <h2>💪 Push A (Chest & Triceps Focused)</h2>
-
-  <!-- Chest Exercises -->
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Incline Dumbbell Press <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="GYMWEB.VID/incline db press.webm" controls width="100%"></video>
-      <p><strong>Sets:</strong> 4 &nbsp; <strong>Reps:</strong> 8-10</p>
-      <p><strong>Muscles:</strong> Upper chest, front delts</p>
-      <p><strong>Form Tip:</strong> Keep wrists aligned with elbows and avoid locking out fully.</p>
+  <div class="wrap">
+    <div class="ui">
+      <div class="score" id="score">SCORE: 0</div>
+      <div class="score" id="best">BEST: 0</div>
     </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Machine Chest Press <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="GYMWEB.VID/machine chest press.webm" controls width="100%"></video>
-      <p><strong>Sets:</strong> 3 &nbsp; <strong>Reps:</strong> 10-12</p>
-      <p><strong>Muscles:</strong> Overall chest</p>
-      <p><strong>Form Tip:</strong> Keep elbows slightly below shoulders and use a full range of motion.</p>
+    <div class="controls">
+      <button class="btn" id="toggleTheme">Night</button>
+      <button class="btn" id="restartBtn">Restart</button>
     </div>
-  </div>
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Cable Fly (or Pec Deck) <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="GYMWEB.VID/stock-footage-cable-standing-up-straight-crossovers-chest-exercise-d.webm" controls width="100%"></video>
-      <p><strong>Sets:</strong> 3 &nbsp; <strong>Reps:</strong> 12-15</p>
-      <p><strong>Muscles:</strong> Inner chest</p>
-      <p><strong>Form Tip:</strong> Slight bend in elbows and squeeze chest hard at peak.</p>
+    <canvas id="game"></canvas>
+
+    <div class="overlay" id="overlay" aria-hidden="true" style="display:none">
+      <div class="panel" id="gameOverPanel">
+        <div style="font-weight:800;font-size:20px;margin-bottom:8px" id="endText">Game Over</div>
+        <div style="margin-bottom:12px">Score: <strong id="endScore">0</strong></div>
+        <div style="display:flex;gap:8px;justify-content:center">
+          <button class="btn" id="playAgain">Play Again</button>
+        </div>
+      </div>
     </div>
+
+    <div class="hint">Space / Up = Jump • Down = Duck • Tap to jump (mobile)</div>
   </div>
 
-  <!-- Triceps Exercises -->
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Overhead Triceps Extension <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="GYMWEB.VID/overhead tricep.webm" controls width="100%"></video>
-      <p><strong>Sets:</strong> 3 &nbsp; <strong>Reps:</strong> 10-12</p>
-      <p><strong>Muscles:</strong> Long head of triceps</p>
-      <p><strong>Form Tip:</strong> Keep elbows tight and avoid flaring out.</p>
-    </div>
-  </div>
+<script>
+/* Dino Runner — Canvas implementation
+   - Player: simple block dinosaur with ducking
+   - Obstacles: cacti of varying widths and heights, and pterodactyls (fliers)
+   - Ground repeats, background clouds (parallax)
+   - Speed increases over time; score increments with distance
+   - Controls: keyboard + touch
+   - Sounds: WebAudio simple jump and crash tones
+*/
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Triceps Pushdown (Cable) <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="GYMWEB.VID/tricep push down.webm" controls width="100%"></video>
-      <p><strong>Sets:</strong> 3 &nbsp; <strong>Reps:</strong> 12-15</p>
-      <p><strong>Muscles:</strong> Lateral and long head</p>
-      <p><strong>Form Tip:</strong> Lock elbows to your side and extend fully.</p>
-    </div>
-  </div>
+(() => {
+  // Canvas & sizing
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  let W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Dips (Assisted or Bodyweight) <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="GYMWEB.VID/stock-footage-triceps-dip-machine-fitness-workout-animation-male-muscle-highlight-demonstration-at-k-resolution.webm" controls width="100%"></video>
-      <p><strong>Sets:</strong> 3 &nbsp; <strong>Reps:</strong> 8-10</p>
-      <p><strong>Muscles:</strong> Lower chest, triceps</p>
-      <p><strong>Form Tip:</strong> Keep torso upright and avoid swinging.</p>
-    </div>
-  </div>
-</div>
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    const cw = rect.width || 900;
+    const ch = rect.height || 360;
+    canvas.width = Math.floor(cw * dpr);
+    canvas.height = Math.floor(ch * dpr);
+    canvas.style.width = cw + 'px';
+    canvas.style.height = ch + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    W = cw; H = ch;
+  }
+  window.addEventListener('resize', resize);
+  setTimeout(resize, 60);
 
-  <div id="pullA" class="day-section">
-  <h2>🧲 Pull A (Back & Biceps Focused)</h2>
+  // UI elements
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const toggleThemeBtn = document.getElementById('toggleTheme');
+  const restartBtn = document.getElementById('restartBtn');
+  const overlay = document.getElementById('overlay');
+  const endScore = document.getElementById('endScore');
+  const playAgain = document.getElementById('playAgain');
+  const endText = document.getElementById('endText');
 
-  <!-- Back Exercises -->
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Pull-Ups (Assisted if Needed) <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/pull_ups.mp4" controls width="100%"></video>
-      <p><strong>Sets:</strong> 4 &nbsp; <strong>Reps:</strong> 6-10</p>
-      <p><strong>Muscles:</strong> Lats, upper back</p>
-      <p><strong>Form Tip:</strong> Go full range, avoid swinging, and engage scapula.</p>
-    </div>
-  </div>
+  // Theme (day/night)
+  let night = false;
+  function applyTheme(){
+    if (night) {
+      document.documentElement.style.setProperty('--bg-day', '#0b1220');
+      document.documentElement.style.setProperty('--bg-night', '#04101b');
+      document.documentElement.style.setProperty('--ground-day', '#0e1724');
+      document.documentElement.style.setProperty('--dino', '#ffffff');
+      canvas.style.background = 'linear-gradient(180deg,#071428,#0b1220)';
+      toggleThemeBtn.textContent = 'Day';
+    } else {
+      document.documentElement.style.setProperty('--bg-day', '#f7fbff');
+      document.documentElement.style.setProperty('--bg-night', '#0b1220');
+      document.documentElement.style.setProperty('--ground-day', '#e9eef3');
+      document.documentElement.style.setProperty('--dino', '#111827');
+      canvas.style.background = 'linear-gradient(180deg,var(--bg-day),#dfeefb)';
+      toggleThemeBtn.textContent = 'Night';
+    }
+  }
+  toggleThemeBtn.addEventListener('click', ()=> { night = !night; applyTheme(); });
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Barbell Bent-Over Rows <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/barbell_row.mp4" controls width="100%"></video>
-      <p><strong>Sets:</strong> 4 &nbsp; <strong>Reps:</strong> 8-10</p>
-      <p><strong>Muscles:</strong> Mid-back, lats</p>
-      <p><strong>Form Tip:</strong> Keep a flat back, pull to your lower ribs.</p>
-    </div>
-  </div>
+  // Game constants
+  const gravity = 2600; // px/s^2
+  const groundYRatio = 0.78; // ground y position as fraction of canvas height
+  const dinoWidth = 44;
+  const dinoHeight = 44;
+  const duckHeight = 26;
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Seated Cable Row <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/seated_cable_row.mp4" controls width="100%"></video>
-      <p><strong>Sets:</strong> 3 &nbsp; <strong>Reps:</strong> 10-12</p>
-      <p><strong>Muscles:</strong> Rhomboids, lats, traps</p>
-      <p><strong>Form Tip:</strong> Squeeze shoulder blades at end, don’t jerk the weight.</p>
-    </div>
-  </div>
+  // Game state
+  let running = false;
+  let gameSpeed = 480; // px/s initial
+  let baseSpeed = 480;
+  let maxSpeed = 1600;
+  let score = 0;
+  let best = parseInt(localStorage.getItem('dino_best') || '0', 10);
+  bestEl.textContent = `BEST: ${best}`;
+  let spawnTimer = 0;
+  let spawnInterval = 1.2; // seconds
+  let obstacles = [];
+  let clouds = [];
+  let groundTiles = [];
+  let lastTime = 0;
+  let distance = 0;
 
-  <!-- Biceps Exercises -->
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Barbell Bicep Curl <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/barbell_bicep_curl.mp4" controls width="100%"></video>
-      <p><strong>Sets:</strong> 4 &nbsp; <strong>Reps:</strong> 8-10</p>
-      <p><strong>Muscles:</strong> Biceps brachii</p>
-      <p><strong>Form Tip:</strong> Keep elbows fixed and avoid swinging.</p>
-    </div>
-  </div>
+  // Player (dino)
+  const player = {
+    x: 80,
+    y: 0,
+    vy: 0,
+    w: dinoWidth,
+    h: dinoHeight,
+    ducking: false,
+    grounded: true,
+    alive: true
+  };
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Incline Dumbbell Curl <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/incline_dumbbell_curl.mp4" controls width="100%"></video>
-      <p><strong>Sets:</strong> 3 &nbsp; <strong>Reps:</strong> 10-12</p>
-      <p><strong>Muscles:</strong> Long head of biceps</p>
-      <p><strong>Form Tip:</strong> Keep arms back and curl slow for full stretch and contraction.</p>
-    </div>
-  </div>
+  // Audio (simple)
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioCtx = null;
+  function ensureAudio(){ if (audioCtx) return; audioCtx = new AudioCtx(); }
+  function playJump(){
+    if (!audioCtx) ensureAudio();
+    const ac = audioCtx;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sine'; o.frequency.value = 420;
+    g.gain.setValueAtTime(0.0001, ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.12, ac.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.2);
+    o.connect(g); g.connect(ac.destination);
+    o.start(ac.currentTime); o.stop(ac.currentTime + 0.22);
+  }
+  function playHit(){
+    if (!audioCtx) ensureAudio();
+    const ac = audioCtx;
+    const o1 = ac.createOscillator();
+    const g1 = ac.createGain();
+    o1.type = 'sawtooth'; o1.frequency.value = 180;
+    g1.gain.setValueAtTime(0.0001, ac.currentTime);
+    g1.gain.exponentialRampToValueAtTime(0.12, ac.currentTime + 0.01);
+    g1.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.4);
+    o1.connect(g1); g1.connect(ac.destination);
+    o1.start(ac.currentTime); o1.stop(ac.currentTime + 0.4);
+  }
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Hammer Curls <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/hammer_curls.mp4" controls width="100%"></video>
-      <p><strong>Sets:</strong> 3 &nbsp; <strong>Reps:</strong> 12-15</p>
-      <p><strong>Muscles:</strong> Brachialis, forearms</p>
-      <p><strong>Form Tip:</strong> Use a neutral grip and control both up and down.</p>
-    </div>
-  </div>
-</div>
+  // Utility - random
+  function rand(a,b){ return a + Math.random()*(b-a); }
 
-  <div id="legsA" class="day-section">
-  <h2>🦵 Leg Day (Quads + Hamstrings/Glutes)</h2>
+  // Obstacle factory (cacti & pterodactyl)
+  function createObstacle(){
+    const r = Math.random();
+    if (r < 0.75) {
+      // cactus type: single or group
+      const types = [
+        {w:20,h:40},
+        {w:28,h:52},
+        {w:18,h:32},
+      ];
+      // create 1-3 cacti cluster
+      const count = Math.random() < 0.18 ? (Math.random() < 0.5 ? 3 : 2) : 1;
+      const group = [];
+      let totalW = 0;
+      for (let i=0;i<count;i++){
+        const t = types[Math.floor(Math.random()*types.length)];
+        const bbw = t.w;
+        group.push({w:bbw,h:t.h});
+        totalW += bbw + (i>0? rand(8,18):0);
+      }
+      return { type: 'cacti', group, x: W + 40, y: groundY(), speed: gameSpeed };
+    } else {
+      // ptera (flying) - height varies
+      const h = rand(0.5, 0.75);
+      const size = rand(40, 56);
+      return { type: 'ptera', w: size, h: size*0.6, x: W + 40, y: H * h, speed: gameSpeed };
+    }
+  }
 
-  <!-- Quadriceps Exercises -->
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Barbell Back Squat <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/back-squat.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 4 sets x 8–10 reps</p>
-      <p><strong>Tips:</strong> Keep your back straight, knees out, and go below parallel.</p>
-    </div>
-  </div>
+  function groundY(){ return H * groundYRatio; }
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Leg Press <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/leg-press.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 4 sets x 12 reps</p>
-      <p><strong>Tips:</strong> Don't lock out knees. Push with heels for better quad focus.</p>
-    </div>
-  </div>
+  // Clouds
+  function createCloud(){
+    const y = rand(H*0.06, H*0.35);
+    return { x: W + rand(20,200), y, w: rand(56, 140), speed: rand(40, 120) };
+  }
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Dumbbell Walking Lunges <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/lunges.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 10 steps each leg</p>
-      <p><strong>Tips:</strong> Maintain balance, take long steps, and keep torso upright.</p>
-    </div>
-  </div>
+  // Initialize world
+  function resetWorld(){
+    obstacles = [];
+    clouds = [];
+    groundTiles = [];
+    score = 0;
+    distance = 0;
+    gameSpeed = baseSpeed;
+    spawnTimer = 0;
+    lastTime = 0;
+    player.y = groundY() - player.h;
+    player.vy = 0;
+    player.ducking = false;
+    player.grounded = true;
+    player.alive = true;
+    updateScore();
+    overlay.style.display = 'none';
+    // seed clouds
+    for (let i=0;i<3;i++) clouds.push(createCloud());
+  }
 
-  <!-- Hamstrings / Glutes Exercises -->
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Romanian Deadlift (RDL) <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/romanian-deadlift.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 4 sets x 10 reps</p>
-      <p><strong>Tips:</strong> Hinge at hips, slight knee bend, stretch hamstrings fully.</p>
-    </div>
-  </div>
+  // Input handling
+  let keys = {};
+  window.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.code === 'Space' || e.key === 'ArrowUp' || e.code === 'ArrowUp') {
+      e.preventDefault();
+      jump();
+    } else if (e.key === 'ArrowDown' || e.code === 'ArrowDown') {
+      duck(true);
+    } else if (e.key === 'r' || e.key === 'R') {
+      startGame();
+    }
+    keys[e.code || e.key] = true;
+  });
+  window.addEventListener('keyup', (e) => {
+    keys[e.code || e.key] = false;
+    if (e.key === 'ArrowDown' || e.code === 'ArrowDown') duck(false);
+  });
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Lying Leg Curl Machine <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/leg-curl.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 12 reps</p>
-      <p><strong>Tips:</strong> Squeeze at top, lower with control, no jerky motion.</p>
-    </div>
-  </div>
+  // Touch support: tap to jump, swipe down to duck (simple)
+  let touchStartY = null;
+  canvas.addEventListener('touchstart', (e) => {
+    if (!running) startGame();
+    const t = e.touches[0];
+    touchStartY = t.clientY;
+    jump();
+  }, {passive:true});
+  canvas.addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    if (touchStartY !== null) {
+      if (t.clientY - touchStartY > 40) duck(true);
+      else duck(false);
+    }
+  }, {passive:true});
+  canvas.addEventListener('touchend', (e) => { duck(false); touchStartY = null; }, {passive:true});
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Hip Thrusts <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/hip-thrust.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 12–15 reps</p>
-      <p><strong>Tips:</strong> Push through heels, pause at the top, full glute squeeze.</p>
-    </div>
-  </div>
-</div>
+  // Player actions
+  function jump(){
+    if (!player.alive) return;
+    if (player.grounded) {
+      player.vy = -900; // initial jump velocity
+      player.grounded = false;
+      player.ducking = false;
+      playJump();
+    }
+  }
+  function duck(yes){
+    if (!player.alive) return;
+    player.ducking = yes && player.grounded;
+  }
 
+  // Collision detection (AABB approx)
+  function checkCollision(obs){
+    // compute bounding box of player (consider ducking)
+    const ph = player.ducking ? duckHeight : player.h;
+    const px = player.x;
+    const py = player.y + (player.h - ph); // if ducking lower top
+    const pw = player.w;
+    const phbox = ph;
+    // obstacle bounding box: depends on type
+    if (obs.type === 'cacti'){
+      // group cacti: compute minX,minY,maxX,maxY
+      let ox = obs.x;
+      // compute width of group
+      let currentX = ox;
+      let minx = currentX;
+      let maxx = currentX;
+      for (let i=0;i<obs.group.length;i++){
+        const g = obs.group[i];
+        if (i>0) currentX += 8 + (i*0.5);
+        minx = Math.min(minx, currentX);
+        maxx = Math.max(maxx, currentX + g.w);
+        currentX += g.w;
+      }
+      const oy = groundY() - obs.group[0].h;
+      // we'll do a simpler prox check: box from minx..maxx and oy..ground
+      if (px < maxx && px + pw > minx && py < groundY() && py + phbox > oy) return true;
+      return false;
+    } else if (obs.type === 'ptera'){
+      const ox = obs.x;
+      const oy = obs.y;
+      const ow = obs.w;
+      const oh = obs.h;
+      if (px < ox + ow && px + pw > ox && py < oy + oh && py + phbox > oy) return true;
+      return false;
+    }
+    return false;
+  }
 
-<div id="forearms" class="day-section">
-  <h2>💪 Forearms Day (Grip & Thickness)</h2>
+  // Spawn obstacles based on timer and speed
+  function updateSpawn(dt){
+    spawnTimer -= dt;
+    if (spawnTimer <= 0) {
+      // spawn with spacing based on speed
+      const ob = createObstacle();
+      // adjust spawn interval based on speed
+      const spacing = Math.max(0.65, 1.2 - (gameSpeed - baseSpeed) / 600);
+      spawnTimer = spacing + Math.random()*0.6;
+      obstacles.push(ob);
+    }
+    // cleanup off-screen obstacles
+    for (let i = obstacles.length-1; i>=0; i--){
+      if (obstacles[i].x + 200 < 0) obstacles.splice(i,1);
+    }
+  }
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Wrist Curls (Barbell) <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/wrist-curl.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 4 sets x 15–20 reps</p>
-      <p><strong>Tips:</strong> Sit on a bench, rest forearms on thighs, and let barbell roll to fingertips before curling back up.</p>
-    </div>
-  </div>
+  // Update world each frame
+  function update(dt){
+    if (!running) return;
+    // speed ramp
+    const speedInc = dt * 6; // accelerates slowly
+    gameSpeed = Math.min(maxSpeed, gameSpeed + speedInc);
+    // distance & score accumulation
+    distance += gameSpeed * dt;
+    score = Math.floor(distance / 10);
+    updateScore();
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Reverse Wrist Curls (Barbell) <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/reverse-wrist-curl.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 15 reps</p>
-      <p><strong>Tips:</strong> Focus on controlling the motion—don’t rush the reps.</p>
-    </div>
-  </div>
+    // clouds
+    for (const c of clouds){
+      c.x -= c.speed * dt;
+    }
+    // remove off-screen clouds and spawn new
+    if (clouds.length < 4 && Math.random() < 0.02) clouds.push(createCloud());
+    for (let i=clouds.length-1;i>=0;i--) if (clouds[i].x + clouds[i].w < -40) clouds.splice(i,1);
 
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Farmer’s Walk <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/farmers-walk.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 rounds x 30 seconds</p>
-      <p><strong>Tips:</strong> Walk slowly with heavy dumbbells and keep shoulders back, core tight.</p>
-    </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Hammer Curls <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/hammer-curls.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 4 sets x 10–12 reps</p>
-      <p><strong>Tips:</strong> Use a neutral grip and squeeze hard at the top.</p>
-    </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Reverse Curls (EZ Bar) <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/reverse-curl-ez.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 4 sets x 10 reps</p>
-      <p><strong>Tips:</strong> Palms down throughout, keep elbows close to body.</p>
-    </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Wrist Roller <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/wrist-roller.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 2–3 rounds</p>
-      <p><strong>Tips:</strong> Roll slowly up and down for full range burn.</p>
-    </div>
-  </div>
-</div>
-
-
-
-  <div id="abs" class="day-section">
-  <h2>💪 Abs Day (Core & Stability)</h2>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Hanging Leg Raises <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/hanging-leg-raise.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 12–15 reps</p>
-      <p><strong>Tips:</strong> Keep legs straight and avoid swinging. Lift with your core.</p>
-    </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Cable Crunch <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/cable-crunch.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 4 sets x 15 reps</p>
-      <p><strong>Tips:</strong> Focus on contracting abs, not pulling with arms.</p>
-    </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Russian Twists <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/russian-twist.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 20 twists (10 each side)</p>
-      <p><strong>Tips:</strong> Keep feet off the floor and twist fully for best oblique work.</p>
-    </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Plank <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/plank.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 1 minute hold</p>
-      <p><strong>Tips:</strong> Keep body in a straight line and tighten core throughout.</p>
-    </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">V-Ups <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/v-ups.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 12 reps</p>
-      <p><strong>Tips:</strong> Engage both upper and lower abs. Move in one smooth motion.</p>
-    </div>
-  </div>
-
-  <div class="exercise" onclick="toggleInfo(this)">
-    <div class="exercise-header">Mountain Climbers <span class="arrow">▼</span></div>
-    <div class="exercise-info">
-      <video src="videos/mountain-climbers.mp4" controls width="100%"></video>
-      <p><strong>Sets/Reps:</strong> 3 sets x 30 seconds</p>
-      <p><strong>Tips:</strong> Keep back straight and drive knees quickly to the chest.</p>
-    </div>
-  </div>
-</div>
-
-
-
-  <footer>
-    Designed by Atul 💪 | Powered by Fitness & Code
-  </footer>
-
-  <script>
-    function showDay(id) {
-      document.querySelectorAll('.day-section').forEach(section => section.style.display = 'none');
-      const active = document.getElementById(id);
-      if (active) active.style.display = 'block';
+    // obstacles move left
+    for (const ob of obstacles){
+      ob.x -= gameSpeed * dt;
     }
 
-    function toggleInfo(el) {
-      const info = el.querySelector('.exercise-info');
-      const arrow = el.querySelector('.arrow');
-      const isShown = info.style.display === 'block';
-      document.querySelectorAll('.exercise-info').forEach(i => i.style.display = 'none');
-      document.querySelectorAll('.arrow').forEach(a => a.classList.remove('rotate'));
-      if (!isShown) {
-        info.style.display = 'block';
-        arrow.classList.add('rotate');
+    // spawn
+    updateSpawn(dt);
+
+    // player physics
+    if (!player.grounded) {
+      player.vy += gravity * dt;
+      player.y += player.vy * dt;
+      if (player.y >= groundY() - player.h) {
+        player.y = groundY() - player.h;
+        player.vy = 0;
+        player.grounded = true;
       }
     }
 
-    showDay('pushA');
-  </script>
+    // collisions
+    for (const ob of obstacles){
+      if (checkCollision(ob)) {
+        // collision! set game over
+        player.alive = false;
+        running = false;
+        showGameOver();
+        playHit();
+      }
+    }
+  }
+
+  // Draw utilities
+  function drawGround(){
+    const gy = groundY();
+    // base ground strip
+    ctx.fillStyle = night ? '#0b1220' : '#e9eef3';
+    ctx.fillRect(0, gy, W, H - gy);
+    // decorative strips
+    ctx.fillStyle = night ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.04)';
+    const stripeW = 14;
+    let offset = (distance / 8) % stripeW;
+    for (let x = -offset; x < W; x += stripeW*2) {
+      ctx.fillRect(x, gy+2, stripeW, 6);
+    }
+  }
+
+  function drawCloud(c){
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = night ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.9)';
+    const x = c.x, y = c.y, w = c.w;
+    // simple pill cloud
+    ctx.beginPath();
+    ctx.ellipse(x, y, w*0.6, w*0.36, 0, 0, Math.PI*2);
+    ctx.ellipse(x + w*0.45, y - w*0.12, w*0.4, w*0.28, 0, 0, Math.PI*2);
+    ctx.ellipse(x - w*0.45, y - w*0.08, w*0.38, w*0.26, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawDino(){
+    ctx.save();
+    const px = player.x;
+    const ph = player.ducking ? duckHeight : player.h;
+    const py = player.y + (player.h - ph);
+    // body
+    ctx.fillStyle = night ? '#fff' : '#111827';
+    ctx.beginPath();
+    ctx.roundRect(px, py, player.w, ph, 6);
+    ctx.fill();
+    // eye
+    ctx.fillStyle = night ? '#000' : '#fff';
+    ctx.beginPath();
+    ctx.arc(px + player.w*0.65, py + ph*0.28, Math.max(1.6, ph*0.06), 0, Math.PI*2);
+    ctx.fill();
+    // foot small protrusion
+    ctx.fillStyle = night ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.02)';
+    ctx.fillRect(px + player.w*0.1, py + ph - 4, 10, 3);
+    ctx.restore();
+  }
+
+  function drawCacti(ob){
+    ctx.save();
+    const baseX = ob.x;
+    let cursorX = baseX;
+    for (let i=0;i<ob.group.length;i++){
+      const g = ob.group[i];
+      const w = g.w, h = g.h;
+      const x = cursorX;
+      const y = groundY() - h;
+      // body rounded
+      ctx.fillStyle = night ? '#3fbf8b' : '#2a7f2a';
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, 3);
+      ctx.fill();
+      // small spikes / arms
+      ctx.fillStyle = night ? '#2b8a5f' : '#1f6a1f';
+      ctx.fillRect(x + w*0.18, y + h*0.18, Math.max(2, w*0.22), Math.max(2, h*0.12));
+      cursorX += w + 10;
+    }
+    ctx.restore();
+  }
+
+  function drawPtera(ob){
+    ctx.save();
+    const x = ob.x, y = ob.y;
+    // body
+    ctx.fillStyle = night ? '#fff' : '#333';
+    ctx.beginPath();
+    ctx.ellipse(x + ob.w*0.5, y + ob.h*0.4, ob.w*0.45, ob.h*0.3, 0, 0, Math.PI*2);
+    ctx.fill();
+    // wings
+    ctx.fillStyle = night ? '#dfefff' : '#666';
+    ctx.beginPath();
+    ctx.moveTo(x + ob.w*0.35, y + ob.h*0.5);
+    ctx.quadraticCurveTo(x - ob.w*0.2, y + ob.h*0.1, x + ob.w*0.15, y + ob.h*0.05);
+    ctx.moveTo(x + ob.w*0.65, y + ob.h*0.5);
+    ctx.quadraticCurveTo(x + ob.w*1.05, y + ob.h*0.1, x + ob.w*0.75, y + ob.h*0.05);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function render(){
+    // clear
+    ctx.clearRect(0,0,W,H);
+    // sky is handled by canvas background style
+    // clouds
+    for (const c of clouds) drawCloud(c);
+    // ground
+    drawGround();
+    // obstacles
+    for (const ob of obstacles){
+      if (ob.type === 'cacti') drawCacti(ob);
+      else if (ob.type === 'ptera') drawPtera(ob);
+    }
+    // player
+    drawDino();
+  }
+
+  // Draw loop
+  function loop(ts){
+    if (!lastTime) lastTime = ts;
+    const dt = Math.min(50, ts - lastTime) / 1000;
+    lastTime = ts;
+    update(dt);
+    render();
+    if (running) requestAnimationFrame(loop);
+  }
+
+  // Score UI
+  function updateScore(){
+    scoreEl.textContent = `SCORE: ${score}`;
+    if (score > best) {
+      best = score;
+      localStorage.setItem('dino_best', String(best));
+      bestEl.textContent = `BEST: ${best}`;
+    }
+  }
+
+  // Game over display
+  function showGameOver(){
+    overlay.style.display = 'grid';
+    endScore.textContent = score;
+    endText.textContent = 'Game Over';
+  }
+
+  // Start / restart
+  function startGame(){
+    resetWorld();
+    running = true;
+    lastTime = 0;
+    requestAnimationFrame(loop);
+    ensureAudio();
+  }
+
+  restartBtn.addEventListener('click', () => { startGame(); });
+  playAgain.addEventListener('click', () => { overlay.style.display = 'none'; startGame(); });
+
+  // init
+  applyTheme();
+  resize();
+  resetWorld();
+  render();
+
+  // Auto-start on first interaction for convenience
+  window.addEventListener('pointerdown', function firstTouch(){
+    window.removeEventListener('pointerdown', firstTouch);
+    // start on first click/tap
+    startGame();
+  });
+
+  // polyfill roundRect for older browsers if needed
+  if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+      if (typeof r === 'undefined') r = 5;
+      this.beginPath();
+      this.moveTo(x + r, y);
+      this.arcTo(x + w, y, x + w, y + h, r);
+      this.arcTo(x + w, y + h, x, y + h, r);
+      this.arcTo(x, y + h, x, y, r);
+      this.arcTo(x, y, x + w, y, r);
+      this.closePath();
+    };
+  }
+
+})();
+</script>
 </body>
 </html>
