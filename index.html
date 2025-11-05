@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dino Game Clone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Dino Game (Mobile Ready)</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body {
@@ -15,222 +15,217 @@
       align-items: center;
       overflow: hidden;
       user-select: none;
+      touch-action: none;
     }
     canvas {
-      border: 2px solid #ddd;
-      border-radius: 10px;
       background: #f7fbff;
+      border-radius: 10px;
+      border: 2px solid #ddd;
     }
   </style>
 </head>
 <body>
-  <canvas id="game" width="800" height="300"></canvas>
+  <canvas id="game"></canvas>
 
   <script>
-    (() => {
-      const canvas = document.getElementById("game");
-      const ctx = canvas.getContext("2d");
+  (() => {
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-      // ===== Load Images =====
-      const dinoImg = new Image();
-      dinoImg.src = "dino.png"; // your dino
+    // ====== Responsive canvas setup ======
+    function resizeCanvas() {
+      canvas.width = window.innerWidth * 0.95;
+      canvas.height = window.innerHeight * 0.5;
+      if (canvas.height < 250) canvas.height = 250; // minimum height
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
 
-      const cactusImg = new Image();
-      cactusImg.src = "cactus.png";
+    // ====== Load Images ======
+    const dinoImg = new Image();
+    dinoImg.src = "dino.png";
+    const cactusImg = new Image();
+    cactusImg.src = "cactus.png";
+    const cloudImg = new Image();
+    cloudImg.src = "cloud.png";
+    const bgImg = new Image();
+    bgImg.src = "background.png";
 
-      const cloudImg = new Image();
-      cloudImg.src = "cloud.png";
+    // ====== Game Variables ======
+    let groundY = canvas.height - 50;
+    let dino = {
+      x: 50,
+      y: groundY - 40,
+      w: 50,
+      h: 50,
+      vy: 0,
+      gravity: 0.8,
+      jumpForce: -14,
+      grounded: true
+    };
+    let obstacles = [];
+    let clouds = [];
+    let score = 0, highScore = 0;
+    let speed = 5;
+    let gameOver = false;
+    let started = false;
+    let obstacleCooldown = 0;
 
-      const bgImg = new Image();
-      bgImg.src = "background.png";
+    // ====== Helpers ======
+    const rectsCollide = (a,b)=>a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
 
-      // ===== Game Variables =====
-      const groundY = 250;
-      let dino = { 
-        x: 50, 
-        y: groundY - 40, 
-        w: 44, 
-        h: 44, 
-        vy: 0, 
-        gravity: 0.7, // smoother jump
-        jumpForce: -13, 
-        grounded: true 
-      };
-      let obstacles = [];
-      let clouds = [];
-      let score = 0;
-      let highScore = 0;
-      let speed = 5; // slower starting speed
-      let gameOver = false;
-      let started = false;
-      let obstacleCooldown = 0;
-
-      // ===== Utility =====
-      function rectsCollide(a, b) {
-        return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-      }
-
-      // ===== Input =====
-      function jump() {
-        if (!started) {
-          started = true;
-          gameOver = false;
-          score = 0;
-          obstacles = [];
-          clouds = [];
-          dino.y = groundY - dino.h;
-          dino.vy = 0;
-          speed = 5;
-          obstacleCooldown = 0;
-          loop();
-        } else if (dino.grounded && !gameOver) {
-          dino.vy = dino.jumpForce;
-          dino.grounded = false;
-        }
-      }
-
-      window.addEventListener("keydown", e => {
-        if (e.code === "Space" || e.code === "ArrowUp") jump();
-        if (e.code === "KeyR" && gameOver) resetGame();
-      });
-      window.addEventListener("mousedown", () => jump());
-      window.addEventListener("touchstart", () => jump());
-
-      function resetGame() {
-        started = false;
+    // ====== Input ======
+    function jump() {
+      if (!started) {
+        started = true;
         gameOver = false;
+        score = 0;
         obstacles = [];
         clouds = [];
-        score = 0;
         speed = 5;
-        dino.y = groundY - dino.h;
-        dino.vy = 0;
         obstacleCooldown = 0;
         loop();
+      } else if (dino.grounded && !gameOver) {
+        dino.vy = dino.jumpForce;
+        dino.grounded = false;
       }
+      if (gameOver) resetGame();
+    }
 
-      // ===== Game Loop =====
-      function loop() {
-        if (!started) {
-          draw();
-          return;
-        }
-        update();
-        draw();
-        if (!gameOver) requestAnimationFrame(loop);
-      }
+    window.addEventListener("keydown", e=>{
+      if (e.code==="Space"||e.code==="ArrowUp") jump();
+      if (e.code==="KeyR"&&gameOver) resetGame();
+    });
+    window.addEventListener("touchstart", jump);
+    window.addEventListener("mousedown", jump);
 
-      function update() {
-        // Jump physics
-        dino.vy += dino.gravity;
-        dino.y += dino.vy;
-        if (dino.y >= groundY - dino.h) {
-          dino.y = groundY - dino.h;
-          dino.vy = 0;
-          dino.grounded = true;
-        }
+    function resetGame(){
+      started=false;
+      gameOver=false;
+      obstacles=[];
+      clouds=[];
+      score=0;
+      speed=5;
+      dino.y=groundY-dino.h;
+      dino.vy=0;
+      obstacleCooldown=0;
+      loop();
+    }
 
-        // Spawn cactus with delay
-        if (obstacleCooldown <= 0 && Math.random() < 0.02) {
-          obstacles.push({ x: canvas.width, y: groundY - 30, w: 25, h: 30 });
-          obstacleCooldown = 80 + Math.random() * 50; // more gap
-        } else {
-          obstacleCooldown--;
-        }
-
-        // Spawn clouds occasionally
-        if (Math.random() < 0.008) {
-          clouds.push({ x: canvas.width, y: 40 + Math.random() * 80, w: 80 });
-        }
-
-        // Move things
-        obstacles.forEach(o => (o.x -= speed));
-        clouds.forEach(c => (c.x -= speed / 3));
-
-        // Remove off-screen
-        obstacles = obstacles.filter(o => o.x + o.w > 0);
-        clouds = clouds.filter(c => c.x + c.w > 0);
-
-        // Collision check
-        for (let o of obstacles) {
-          if (rectsCollide(dino, o)) {
-            gameOver = true;
-            if (score > highScore) highScore = score;
-          }
-        }
-
-        // Score and difficulty increase
-        if (!gameOver) {
-          score += 0.05;
-          if (speed < 10) speed += 0.0005; // gradual increase
-        }
-      }
-
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Background
-        if (bgImg.complete && bgImg.width > 0) {
-          ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-        } else {
-          ctx.fillStyle = "#f7fbff";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // Clouds
-        clouds.forEach(c => {
-          if (cloudImg.complete && cloudImg.width > 0)
-            ctx.drawImage(cloudImg, c.x, c.y, c.w, 40);
-          else {
-            ctx.fillStyle = "rgba(180,180,180,0.3)";
-            ctx.fillRect(c.x, c.y, c.w, 20);
-          }
-        });
-
-        // Ground
-        ctx.fillStyle = "#ddd";
-        ctx.fillRect(0, groundY, canvas.width, 3);
-
-        // Obstacles
-        obstacles.forEach(o => {
-          if (cactusImg.complete && cactusImg.width > 0)
-            ctx.drawImage(cactusImg, o.x, o.y, o.w, o.h);
-          else {
-            ctx.fillStyle = "#228B22";
-            ctx.fillRect(o.x, o.y, o.w, o.h);
-          }
-        });
-
-        // Dino
-        if (dinoImg.complete && dinoImg.width > 0)
-          ctx.drawImage(dinoImg, dino.x, dino.y, dino.w, dino.h);
-        else {
-          ctx.fillStyle = "#222";
-          ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
-        }
-
-        // Score display
-        ctx.fillStyle = "#333";
-        ctx.font = "20px Arial";
-        ctx.fillText("Score: " + Math.floor(score), 20, 30);
-        ctx.fillText("High: " + Math.floor(highScore), 700, 30);
-
-        // Game Over text
-        if (gameOver) {
-          ctx.fillStyle = "rgba(0,0,0,0.6)";
-          ctx.font = "26px Arial";
-          ctx.fillText("Game Over!", canvas.width / 2 - 80, canvas.height / 2);
-          ctx.font = "16px Arial";
-          ctx.fillText("Press R to Restart", canvas.width / 2 - 70, canvas.height / 2 + 30);
-        } else if (!started) {
-          ctx.fillStyle = "rgba(0,0,0,0.5)";
-          ctx.font = "20px Arial";
-          ctx.fillText("Press Space or Tap to Start", canvas.width / 2 - 120, canvas.height / 2);
-        }
-      }
-
+    // ====== Main Loop ======
+    function loop(){
+      if(!started){ draw(); return; }
+      update();
       draw();
-    })();
+      if(!gameOver) requestAnimationFrame(loop);
+    }
+
+    function update(){
+      dino.vy += dino.gravity;
+      dino.y += dino.vy;
+      if (dino.y >= groundY - dino.h){
+        dino.y = groundY - dino.h;
+        dino.vy = 0;
+        dino.grounded = true;
+      }
+
+      // Cactus spawn control
+      if (obstacleCooldown <= 0 && Math.random()<0.02){
+        obstacles.push({x:canvas.width, y:groundY-30, w:30, h:40});
+        obstacleCooldown = 100 + Math.random()*80;
+      } else obstacleCooldown--;
+
+      // Clouds
+      if (Math.random()<0.008)
+        clouds.push({x:canvas.width, y:40+Math.random()*80, w:80});
+
+      // Move
+      obstacles.forEach(o=>o.x-=speed);
+      clouds.forEach(c=>c.x-=speed/3);
+
+      // Cleanup
+      obstacles = obstacles.filter(o=>o.x+o.w>0);
+      clouds = clouds.filter(c=>c.x+c.w>0);
+
+      // Collisions
+      for (let o of obstacles)
+        if (rectsCollide(dino,o)) {
+          gameOver=true;
+          if (score>highScore) highScore=score;
+        }
+
+      // Score & difficulty
+      if(!gameOver){
+        score += 0.05;
+        if(speed<10) speed += 0.0005;
+      }
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      groundY = canvas.height - 50;
+
+      // Background
+      if(bgImg.complete && bgImg.width>0)
+        ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
+      else{
+        ctx.fillStyle="#f7fbff";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+      }
+
+      // Clouds
+      clouds.forEach(c=>{
+        if(cloudImg.complete && cloudImg.width>0)
+          ctx.drawImage(cloudImg,c.x,c.y,c.w,40);
+        else{
+          ctx.fillStyle="rgba(180,180,180,0.3)";
+          ctx.fillRect(c.x,c.y,c.w,20);
+        }
+      });
+
+      // Ground
+      ctx.fillStyle="#ddd";
+      ctx.fillRect(0,groundY,canvas.width,3);
+
+      // Obstacles
+      obstacles.forEach(o=>{
+        if(cactusImg.complete && cactusImg.width>0)
+          ctx.drawImage(cactusImg,o.x,o.y,o.w,o.h);
+        else{
+          ctx.fillStyle="#228B22";
+          ctx.fillRect(o.x,o.y,o.w,o.h);
+        }
+      });
+
+      // Dino
+      if(dinoImg.complete && dinoImg.width>0)
+        ctx.drawImage(dinoImg,dino.x,dino.y,dino.w,dino.h);
+      else{
+        ctx.fillStyle="#222";
+        ctx.fillRect(dino.x,dino.y,dino.w,dino.h);
+      }
+
+      // Score
+      ctx.fillStyle="#333";
+      ctx.font=`${Math.max(16,canvas.width/40)}px Arial`;
+      ctx.fillText("Score: "+Math.floor(score), 20, 40);
+      ctx.fillText("High: "+Math.floor(highScore), canvas.width-140, 40);
+
+      if(gameOver){
+        ctx.fillStyle="rgba(0,0,0,0.6)";
+        ctx.font=`${Math.max(20,canvas.width/30)}px Arial`;
+        ctx.fillText("Game Over!", canvas.width/2-80, canvas.height/2);
+        ctx.font=`${Math.max(14,canvas.width/50)}px Arial`;
+        ctx.fillText("Tap anywhere to restart", canvas.width/2-90, canvas.height/2+30);
+      }else if(!started){
+        ctx.fillStyle="rgba(0,0,0,0.5)";
+        ctx.font=`${Math.max(16,canvas.width/40)}px Arial`;
+        ctx.fillText("Tap or Press Space to Start", canvas.width/2-130, canvas.height/2);
+      }
+    }
+
+    draw();
+  })();
   </script>
 </body>
 </html>
