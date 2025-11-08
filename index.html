@@ -136,7 +136,7 @@
 
       // Spawn flame obstacles
       if (obstacleCooldown <= 0 && Math.random() < 0.02) {
-        obstacles.push({ x: canvas.width, y: groundY - 60, w: 50, h: 60 });
+        obstacles.push({ x: canvas.width, y: groundY - 60, w: 70, h: 80 });
         obstacleCooldown = 120 + Math.random() * 80;
       } else obstacleCooldown--;
 
@@ -224,3 +224,4 @@
   </script>
 </body>
 </html>
+
