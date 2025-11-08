@@ -32,6 +32,7 @@
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
 
+    // Resize canvas for mobile responsiveness
     function resizeCanvas() {
       canvas.width = window.innerWidth * 0.95;
       canvas.height = window.innerHeight * 0.5;
@@ -40,41 +41,31 @@
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    // ====== Load Images ======
+    // ====== Load assets ======
     const dinoImg = new Image();
     dinoImg.src = "dino.png";
+
     const flameImg = new Image();
     flameImg.src = "flame.gif";
 
-    // ====== Load Sounds ======
+    flameImg.onload = () => console.log("🔥 Flame loaded successfully!");
+    flameImg.onerror = () => console.error("❌ Flame image not found! Check filename and path.");
+
     const jumpSound = new Audio("jump.mp3");
     const loseSound = new Audio("gameover.mp3");
 
     // ====== Game Variables ======
     let groundY = canvas.height - 50;
-    let dino = {
-      x: 50,
-      y: groundY - 80,
-      w: 80,
-      h: 80,
-      vy: 0,
-      gravity: 0.8,
-      jumpForce: -14,
-      grounded: true
-    };
+    let dino = { x: 50, y: groundY - 80, w: 80, h: 80, vy: 0, gravity: 0.8, jumpForce: -14, grounded: true };
     let obstacles = [];
     let score = 0, highScore = 0;
     let speed = 5;
-    let gameOver = false;
-    let started = false;
-    let obstacleCooldown = 0;
+    let gameOver = false, started = false, obstacleCooldown = 0;
 
-    // ====== Collision Helper ======
     const rectsCollide = (a, b) =>
-      a.x + a.w * 0.7 > b.x && a.x + a.w * 0.3 < b.x + b.w &&
+      a.x + a.w * 0.6 > b.x && a.x + a.w * 0.4 < b.x + b.w &&
       a.y + a.h * 0.8 > b.y && a.y + a.h * 0.2 < b.y + b.h;
 
-    // ====== Input ======
     function jump() {
       if (!started) {
         started = true;
@@ -112,7 +103,6 @@
       loop();
     }
 
-    // ====== Game Loop ======
     function loop(){
       if(!started){ draw(); return; }
       update();
@@ -121,7 +111,7 @@
     }
 
     function update(){
-      // Dino physics
+      // Dino gravity
       dino.vy += dino.gravity;
       dino.y += dino.vy;
       if (dino.y >= groundY - dino.h){
@@ -130,17 +120,17 @@
         dino.grounded = true;
       }
 
-      // Spawn flame
+      // Spawn flame obstacles
       if (obstacleCooldown <= 0 && Math.random()<0.02){
-        obstacles.push({x:canvas.width, y:groundY-60, w:40, h:60});
+        obstacles.push({x:canvas.width, y:groundY-60, w:50, h:60});
         obstacleCooldown = 100 + Math.random()*80;
       } else obstacleCooldown--;
 
-      // Move obstacles
+      // Move & filter
       obstacles.forEach(o=>o.x-=speed);
       obstacles = obstacles.filter(o=>o.x+o.w>0);
 
-      // Collision check
+      // Collision
       for (let o of obstacles)
         if (rectsCollide(dino,o)) {
           if (!gameOver) loseSound.play();
@@ -148,7 +138,6 @@
           if (score>highScore) highScore=score;
         }
 
-      // Score & difficulty
       if(!gameOver){
         score += 0.05;
         if(speed<10) speed += 0.0005;
@@ -163,7 +152,7 @@
       ctx.fillStyle="#ddd";
       ctx.fillRect(0,groundY,canvas.width,3);
 
-      // Obstacles (flames)
+      // Draw flames
       obstacles.forEach(o=>{
         if(flameImg.complete && flameImg.width>0)
           ctx.drawImage(flameImg,o.x,o.y,o.w,o.h);
@@ -173,7 +162,7 @@
         }
       });
 
-      // Dino
+      // Draw dino
       if(dinoImg.complete && dinoImg.width>0)
         ctx.drawImage(dinoImg,dino.x,dino.y,dino.w,dino.h);
       else{
@@ -181,7 +170,7 @@
         ctx.fillRect(dino.x,dino.y,dino.w,dino.h);
       }
 
-      // Score
+      // Draw score
       ctx.fillStyle="#333";
       ctx.font=`${Math.max(16,canvas.width/40)}px Arial`;
       ctx.fillText("Score: "+Math.floor(score), 20, 40);
@@ -193,7 +182,7 @@
         ctx.fillText("🔥 Game Over!", canvas.width/2-90, canvas.height/2);
         ctx.font=`${Math.max(14,canvas.width/50)}px Arial`;
         ctx.fillText("Tap anywhere to restart", canvas.width/2-90, canvas.height/2+30);
-      }else if(!started){
+      } else if(!started){
         ctx.fillStyle="rgba(0,0,0,0.5)";
         ctx.font=`${Math.max(16,canvas.width/40)}px Arial`;
         ctx.fillText("Tap or Press Space to Start", canvas.width/2-130, canvas.height/2);
