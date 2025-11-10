@@ -179,8 +179,26 @@
       });
 
       // Ground
-      ctx.fillStyle = "#ddd";
-      ctx.fillRect(0, groundY, canvas.width, 3);
+     // Ground (Brown Dirt)
+const groundHeight = 40;
+
+ctx.fillStyle = "#8B4513"; // brown main ground
+ctx.fillRect(0, groundY, canvas.width, groundHeight);
+
+// Top soil line
+ctx.fillStyle = "#A0522D";
+ctx.fillRect(0, groundY, canvas.width, 8);
+
+// Textured dots (small rocks)
+for (let i = 0; i < canvas.width / 15; i++) {
+  ctx.fillStyle = "#5C3317";
+  const rx = Math.random() * canvas.width;
+  const ry = groundY + 10 + Math.random() * 25;
+  ctx.beginPath();
+  ctx.arc(rx, ry, 2 + Math.random() * 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 
       // Obstacles (Flames)
       obstacles.forEach(o => {
@@ -224,6 +242,7 @@
   </script>
 </body>
 </html>
+
 
 
 
