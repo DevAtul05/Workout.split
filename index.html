@@ -3,12 +3,11 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-  <title>Dino Nether — Volcanoes & Red Moon</title>
+  <title>Dino Nether — Volcanoes & Red Moon (fixed collision)</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%;background:#0b0000;display:flex;align-items:center;justify-content:center}
     canvas{width:95vw;max-width:1100px;border-radius:12px;display:block}
-    /* small UI touches (optional) */
     .ui{position:fixed;left:12px;top:12px;color:#fff;font-family:Inter,system-ui,Arial;font-weight:700;text-shadow:0 1px 6px rgba(0,0,0,0.6)}
     .hint{position:fixed;right:12px;top:12px;color:rgba(255,220,220,0.9);font-weight:700}
   </style>
@@ -25,8 +24,8 @@
   const scoreEl = document.getElementById('score');
   const bestEl = document.getElementById('best');
 
-  // Responsive canvas (pixel size = css * devicePixelRatio for crispness)
-  function resize(){
+  // devicePixel handling + resize
+  function applySize(){
     const cssW = Math.min(window.innerWidth * 0.95, 1100);
     const cssH = Math.max(300, Math.min(window.innerHeight * 0.6, 720));
     canvas.style.width = cssW + 'px';
@@ -35,18 +34,25 @@
     canvas.width = Math.floor(cssW * ratio);
     canvas.height = Math.floor(cssH * ratio);
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+    // update groundY and reposition dino baseline if needed
+    groundY = Math.round((canvas.height / (window.devicePixelRatio || 1)) * 0.78);
+    // ensure dino sits on ground when resized
+    if (dino) dino.y = groundY - dino.h;
   }
-  window.addEventListener('resize', resize);
-  resize();
+  window.addEventListener('resize', applySize);
+
+  applySize();
 
   // Assets (optional)
   const dinoImg = new Image(); dinoImg.src = 'dino.png';
   const flameImg = new Image(); flameImg.src = 'fire.gif'; // optional
+  const cloudImg = new Image(); cloudImg.src = 'cloud.png';
   const jumpSound = new Audio('jump.mp3');
   const loseSound = new Audio('gameover.mp3');
 
   // Game state
-  let groundY = canvas.height / (window.devicePixelRatio || 1) - 50;
+  let groundY = Math.round((canvas.height / (window.devicePixelRatio || 1)) * 0.78);
   let dino = { x: 60, y: groundY - 80, w: 70, h: 80, vy: 0, gravity: 0.85, jumpForce: -15, grounded: true };
   let obstacles = []; // flame obstacles (x,y,w,h)
   let particles = []; // lava sparks & smoke
@@ -65,23 +71,20 @@
 
   // helpers
   function rand(a,b){ return a + Math.random()*(b-a); }
-  function rectIntersect(a,b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
   function playSound(snd){
     try{ snd.currentTime = 0; snd.play().catch(()=>{}); } catch(e){}
   }
 
-  // build volcano arrays to tile across screen
+  // BUILD VOLCANOES (call after resize)
   function buildVolcanoes(){
     const cw = canvas.width / (window.devicePixelRatio || 1);
     volcanoesFar = [];
     volcanoesNear = [];
-    // far: lower height, darker
     for(let x = 0; x < cw*2; x += Math.floor(cw/3 + Math.random()*200)){
       const w = 260 + Math.random()*120;
       const h = 80 + Math.random()*80;
       volcanoesFar.push({ x: x, w, h });
     }
-    // near: bigger, closer
     for(let x = 0; x < cw*2; x += Math.floor(cw/2.5 + Math.random()*180)){
       const w = 220 + Math.random()*150;
       const h = 120 + Math.random()*120;
@@ -90,7 +93,7 @@
   }
 
   buildVolcanoes();
-  window.addEventListener('resize', () => { resize(); buildVolcanoes(); });
+  window.addEventListener('resize', () => { applySize(); buildVolcanoes(); });
 
   // spawn obstacle (lava rock or animated obstacle)
   function spawnObstacle(){
@@ -103,6 +106,23 @@
   // particle helper
   function addParticle(x,y,vx,vy,life,color,size, type='spark'){
     particles.push({ x, y, vx, vy, life, age:0, color, size, type });
+  }
+
+  // NEW: tighter/fair collision function
+  // returns true when collision happens — uses a tighter hitbox on the player
+  function rectsCollide(a,b){
+    // a = player, b = obstacle
+    const leftA = a.x + a.w * 0.32;   // ignore left 32% of player
+    const rightA = a.x + a.w * 0.68;  // ignore right 32% of player
+    const topA = a.y + a.h * 0.28;    // ignore top 28% (head)
+    const bottomA = a.y + a.h * 0.88; // ignore bottom 12% (feet tolerance)
+
+    const leftB = b.x;
+    const rightB = b.x + b.w;
+    const topB = b.y;
+    const bottomB = b.y + b.h;
+
+    return !(rightA < leftB || leftA > rightB || bottomA < topB || topA > bottomB);
   }
 
   // update step
@@ -124,7 +144,7 @@
     if (mountOff1 <= -cw) mountOff1 += cw;
     if (mountOff2 <= -cw) mountOff2 += cw;
 
-    // spawn clouds (now smoke) less frequently
+    // spawn smoke particles
     if (Math.random() < 0.008) {
       const sx = cw + 40;
       addParticle(sx, rand(40, groundY*0.45), -rand(0.3,1.2), -0.1, 5000, 'rgba(120,80,80,0.14)', 40, 'smoke');
@@ -135,7 +155,6 @@
     const spInt = Math.max(700, spawnInterval - speed*20);
     if (spawnTimer > spInt){
       spawnTimer = 0;
-      // small chance to spawn cluster
       if (Math.random() < 0.15) {
         for (let i=0;i< (Math.random()<0.5?2:1); i++){
           spawnObstacle();
@@ -158,17 +177,14 @@
       p.age += dt;
       p.x += p.vx * (dt/16);
       p.y += p.vy * (dt/16);
-      // slow down slight
       p.vx *= 0.995;
       p.vy += (p.type==='smoke'? -0.002 : 0.08) * (dt/16);
       if (p.age > p.life) particles.splice(i,1);
     }
 
-    // collision detection (softened)
+    // collision detection using the new rectsCollide
     for (let o of obstacles){
-      const hit = (dino.x + dino.w*0.7 > o.x) && (dino.x + dino.w*0.3 < o.x + o.w) &&
-                  (dino.y + dino.h*0.8 > o.y) && (dino.y + dino.h*0.2 < o.y + o.h);
-      if (hit && !gameOver){
+      if (!gameOver && rectsCollide(dino, o)){
         gameOver = true;
         playSound(loseSound);
         // big burst of particles
@@ -185,7 +201,6 @@
       if (score > best){ best = Math.floor(score); bestEl.textContent = best; localStorage.setItem('nether_best', String(best)); }
       if (speed < 12) speed += 0.0006 * (dt/16);
     }
-
   }
 
   // draw functions
@@ -203,23 +218,20 @@
   }
 
   function drawRedMoon(){
-    // pulse with time
+    const w = canvas.width / (window.devicePixelRatio || 1);
     const t = performance.now() * 0.001;
-    const cx = Math.min( w*0.78 || (canvas.width/(window.devicePixelRatio||1))*0.78, canvas.width/(window.devicePixelRatio||1) - 120 );
+    const cx = w * 0.78;
     const cy = 90;
     const moonR = 52 + Math.sin(t*1.2)*3;
-    // glow
     const rg = ctx.createRadialGradient(cx,cy,0,cx,cy,moonR*3);
     rg.addColorStop(0,'rgba(255,120,120,0.95)');
     rg.addColorStop(0.5,'rgba(200,40,40,0.25)');
     rg.addColorStop(1,'rgba(0,0,0,0)');
     ctx.fillStyle = rg;
     ctx.beginPath(); ctx.arc(cx,cy,moonR*3,0,Math.PI*2); ctx.fill();
-    // moon
     ctx.beginPath(); ctx.arc(cx,cy,moonR,0,Math.PI*2);
     ctx.fillStyle = '#ff3a3a';
     ctx.fill();
-    // subtle surface dots
     ctx.fillStyle = 'rgba(0,0,0,0.08)';
     for (let i=0;i<8;i++){
       ctx.beginPath();
@@ -230,17 +242,14 @@
 
   function drawVolcanoes(){
     const w = canvas.width / (window.devicePixelRatio || 1);
-    // far layer (dark silhouettes)
     ctx.save();
     ctx.translate(mountOff1,0);
     for (let v of volcanoesFar){
       drawSingleVolcano(v.x, v.w, v.h, false);
-      // duplicate to tile
       drawSingleVolcano(v.x + w, v.w, v.h, false);
     }
     ctx.restore();
 
-    // near layer (brighter, with lava glow)
     ctx.save();
     ctx.translate(mountOff2*1.3,0);
     for (let v of volcanoesNear){
@@ -255,42 +264,36 @@
     const peakX = x + width/2;
     const peakY = baseY - height - (near?10:0);
 
-    // mountain body
+    // volcano body (rounded-ish silhouette)
     ctx.beginPath();
     ctx.moveTo(x, baseY);
-    ctx.lineTo(peakX - width*0.08, peakY + (near?6:12));
-    ctx.lineTo(peakX, peakY);
-    ctx.lineTo(peakX + width*0.08, peakY + (near?6:12));
-    ctx.lineTo(x + width, baseY);
+    ctx.quadraticCurveTo(peakX - width*0.12, peakY + (near?8:16), peakX, peakY);
+    ctx.quadraticCurveTo(peakX + width*0.12, peakY + (near?8:16), x + width, baseY);
     ctx.closePath();
-    // color: near brighter
     ctx.fillStyle = near ? '#3b0f00' : '#2b0700';
     ctx.fill();
 
-    // rim glow / crater lip
-    ctx.beginPath();
+    // crater rim
     const rimY = peakY + (near?6:10);
+    ctx.strokeStyle = 'rgba(255,100,30,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
     ctx.moveTo(peakX - width*0.06, rimY);
     ctx.lineTo(peakX + width*0.06, rimY);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = 'rgba(255,100,30,0.65)';
     ctx.stroke();
 
-    // lava stream - animated
+    // animated lava stream
     const t = performance.now() * 0.002;
-    const lavaW = width * 0.12;
+    const lavaW = Math.max(12, width * 0.10);
     const lx = peakX - lavaW/2;
     const ly = rimY;
     const maxLen = height * 0.9;
-    // flow height varies with time
-    const flow = maxLen * (0.5 + 0.5 * Math.abs(Math.sin(t + x*0.002)));
-    // main lava column
+    const flow = maxLen * (0.45 + 0.55 * Math.abs(Math.sin(t + x*0.002)));
     const grad = ctx.createLinearGradient(lx, ly, lx, ly + flow);
     grad.addColorStop(0, 'rgba(255,220,120,0.98)');
     grad.addColorStop(0.35, 'rgba(255,110,20,0.95)');
     grad.addColorStop(1, 'rgba(120,20,20,0.9)');
     ctx.fillStyle = grad;
-    // lava tapering
     ctx.beginPath();
     ctx.moveTo(lx, ly);
     ctx.lineTo(lx + lavaW, ly);
@@ -301,57 +304,55 @@
 
     // lava glow
     const glow = ctx.createRadialGradient(peakX, ly + flow*0.4, 0, peakX, ly + flow*0.4, flow*0.8);
-    glow.addColorStop(0, 'rgba(255,140,60,0.25)');
+    glow.addColorStop(0, 'rgba(255,140,60,0.24)');
     glow.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.ellipse(peakX, ly + flow*0.4, lavaW*1.5, flow*0.7, 0, 0, Math.PI*2);
+    ctx.ellipse(peakX, ly + flow*0.4, lavaW*1.4, flow*0.6, 0, 0, Math.PI*2);
     ctx.fill();
 
-    // occasional little lava droplets (particles) from peak
+    // occasional droplets
     if (Math.random() < 0.02){
       addParticle(peakX + rand(-6,6), ly + rand(-2,4), rand(-1.2,1.2), rand(-3.6,-1.2), 800 + Math.random()*800, 'rgba(255,140,40,0.95)', 3, 'spark');
     }
   }
 
-  // Draw obstacles, particles, dino and ground
+  // Draw entities (ground, obstacles, particles, dino)
   function drawEntities(){
     const w = canvas.width / (window.devicePixelRatio || 1);
-    // ground: brown dirt strip with top line
     const groundHeight = 40;
+    // ground
     ctx.fillStyle = '#4b1f0b';
     ctx.fillRect(0, groundY, w, groundHeight);
     ctx.fillStyle = '#7a2e10';
     ctx.fillRect(0, groundY, w, 8);
-    // textured rocks (randomized but deterministic per frame would need seed; it's fine random)
+
+    // textured dots (rock)
     for (let i=0;i<Math.floor(w/20);i++){
-      ctx.fillStyle = 'rgba(30,10,10,0.5)';
+      ctx.fillStyle = 'rgba(30,10,10,0.45)';
       const rx = (i*37) % w + (i%3)*3;
       const ry = groundY + 10 + (i%4);
-      ctx.beginPath(); ctx.arc(rx, ry, 1.5 + ((i%3)/2), 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(rx, ry, 1.1 + ((i%3)/2), 0, Math.PI*2); ctx.fill();
     }
 
-    // obstacles (fire blocks)
+    // obstacles
     for (let o of obstacles){
       if (flameImg.complete && flameImg.naturalWidth){
-        // draw gif if available
         ctx.drawImage(flameImg, o.x, o.y, o.w, o.h);
       } else {
-        // draw ember pillar with animated gradient
         const t = performance.now()*0.002 + o.x*0.003;
         const g = ctx.createLinearGradient(o.x, o.y, o.x, o.y + o.h);
-        g.addColorStop(0, `rgba(${240 + Math.sin(t)*8|0},${90 + Math.cos(t)*10|0},${30},1)`);
+        g.addColorStop(0, `rgba(${240 + Math.sin(t)*8|0},${90 + Math.cos(t)*10|0},30,1)`);
         g.addColorStop(0.5, 'rgba(200,50,20,0.95)');
         g.addColorStop(1, 'rgba(120,20,10,0.9)');
         ctx.fillStyle = g;
         ctx.fillRect(o.x, o.y, o.w, o.h);
-        // flicker highlight
         ctx.fillStyle = 'rgba(255,200,100,0.08)';
         ctx.fillRect(o.x + (Math.sin(t*4)*2 + 4), o.y + 6, o.w - 8, 8);
       }
     }
 
-    // particles (sparks + smoke)
+    // particles
     for (let p of particles){
       const lifeRatio = 1 - (p.age / p.life);
       if (p.type === 'ember' || p.type === 'spark'){
@@ -361,14 +362,13 @@
         ctx.fill();
       } else if (p.type === 'smoke'){
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = 0.6 * (1 - p.age / p.life);
-        // soft rectangle as smoke
+        ctx.globalAlpha = 0.58 * Math.max(0, 1 - p.age / p.life);
         ctx.fillRect(p.x, p.y - p.size*0.5, p.size*1.6, p.size*0.6);
         ctx.globalAlpha = 1;
       }
     }
 
-    // draw dino
+    // dino
     if (dinoImg.complete && dinoImg.naturalWidth){
       ctx.drawImage(dinoImg, dino.x, dino.y, dino.w, dino.h);
     } else {
@@ -392,7 +392,7 @@
     ctx.fillText('Score: ' + Math.floor(score), 20, 40);
     ctx.fillText('Best: ' + best, w - 140, 40);
 
-    // game over or start hints
+    // hints
     if (!started){
       ctx.fillStyle = 'rgba(255,180,180,0.9)';
       ctx.font = `${Math.max(12, Math.floor(w/30))}px Inter, Arial`;
@@ -417,8 +417,7 @@
     if (running && started && !gameOver){
       update(dt);
     } else if (started && gameOver){
-      // update particles still so explosion fades
-      update(dt);
+      update(dt); // still animate particles
     }
     drawFull();
     requestAnimationFrame(frame);
@@ -429,9 +428,8 @@
     if (!started){
       started = true; running = true; gameOver = false; score = 0; obstacles = []; particles = []; speed = 5; spawnTimer = 0;
       lastTS = 0;
-      playSound(jumpSound); // small sound when starting optionally
+      playSound(jumpSound);
     } else if (gameOver){
-      // reset
       started = false; running = false; gameOver = false; score = 0; obstacles = []; particles = [];
       dino.y = groundY - dino.h; dino.vy = 0;
       buildVolcanoes();
@@ -440,7 +438,6 @@
       dino.vy = dino.jumpForce;
       dino.grounded = false;
       playSound(jumpSound);
-      // little jump particles
       for (let i=0;i<6;i++){
         addParticle(dino.x + dino.w*0.5 + rand(-8,8), dino.y + dino.h - 6, rand(-1.6,1.6), rand(-2.8,-0.6), 700 + Math.random()*400, 'rgba(255,160,70,0.9)', 2, 'spark');
       }
@@ -449,7 +446,7 @@
 
   window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); doJump(); }
-    if (e.key.toLowerCase() === 'r') { // restart
+    if (e.key.toLowerCase() === 'r') {
       started = false; running = false; gameOver = false; score = 0; obstacles = []; particles = []; dino.y = groundY - dino.h; dino.vy = 0; buildVolcanoes();
     }
   }, {passive:false});
@@ -466,3 +463,4 @@
 </script>
 </body>
 </html>
+
