@@ -172,11 +172,10 @@
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // ====== Sun ======
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-      ctx.fillStyle = "#D90000";
-      ctx.fill();
-
+     ctx.beginPath();
+    ctx.arc(cx, cy, moonR, 0, Math.PI * 2);
+    ctx.fillStyle = "#ff3333";
+    ctx.fill();
       // ====== Parallax Mountains ======
 
       // FAR MOUNTAINS
@@ -283,4 +282,5 @@
   </script>
 </body>
 </html>
+
 
