@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Nether Dino Game</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Dino Flame Game</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -13,283 +11,275 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      background: linear-gradient(#aee1f9, #f7fbff);
       overflow: hidden;
-      background: black;
     }
     canvas {
-      border: 2px solid #222;
+      border: 2px solid #ddd;
       border-radius: 10px;
-      background: #000;
+      background: linear-gradient(to bottom, #c7e9ff 0%, #e8f6ff 100%);
     }
   </style>
 </head>
-
 <body>
-<canvas id="game"></canvas>
+  <canvas id="game"></canvas>
 
-<script>
-(() => {
-  const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d");
+  <script>
+  (() => {
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-  function resizeCanvas() {
-    canvas.width = window.innerWidth * 0.95;
-    canvas.height = window.innerHeight * 0.55;
-    if (canvas.height < 260) canvas.height = 260;
-  }
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
-
-  // =====================
-  // LOAD ASSETS
-  // =====================
-  const dinoImg = new Image();
-  dinoImg.src = "dino.png";
-
-  const flameImg = new Image();
-  flameImg.src = "fire.gif"; // obstacle
-
-  // =====================
-  // VARIABLES
-  // =====================
-  let groundY = canvas.height - 60;
-
-  let dino = {
-    x: 60,
-    y: groundY - 80,
-    w: 70,
-    h: 80,
-    vy: 0,
-    gravity: 0.8,
-    jumpForce: -14,
-    grounded: true
-  };
-
-  let obstacles = [];
-  let score = 0, highScore = 0;
-  let speed = 5;
-  let started = false, gameOver = false;
-  let obstacleCooldown = 0;
-
-  // =====================
-  // COLLISION
-  // =====================
-  const rectsCollide = (a, b) =>
-    a.x + a.w * 0.6 > b.x &&
-    a.x + a.w * 0.4 < b.x + b.w &&
-    a.y + a.h * 0.8 > b.y &&
-    a.y + a.h * 0.2 < b.y + b.h;
-
-  // =====================
-  // CONTROLS
-  // =====================
-  function jump() {
-    if (!started) {
-      started = true;
-      loop();
-      return;
+    function resizeCanvas() {
+      canvas.width = window.innerWidth * 0.95;
+      canvas.height = window.innerHeight * 0.5;
+      if (canvas.height < 250) canvas.height = 250;
     }
-    if (gameOver) { resetGame(); return; }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
 
-    if (dino.grounded) {
-      dino.vy = dino.jumpForce;
-      dino.grounded = false;
+    // ====== Load images ======
+    const dinoImg = new Image();
+    dinoImg.src = "dino.png";
+
+    const flameImg = new Image();
+    flameImg.src = "fire.gif";
+
+    const cloudImg = new Image();
+    cloudImg.src = "cloud.png";
+
+    // ====== Parallax Variables ======
+    let mountainOffset1 = 0;
+    let mountainOffset2 = 0;
+    const mountainSpeed1 = 0.2;   // far mountains
+    const mountainSpeed2 = 0.5;   // near mountains
+    const sunX = 100;
+    const sunY = 80;
+    const sunRadius = 35;
+
+    // ====== Sounds ======
+    const jumpSound = new Audio("jump.mp3");
+    const loseSound = new Audio("gameover.mp3");
+
+    // ====== Game variables ======
+    let groundY = canvas.height - 50;
+    let dino = { x: 50, y: groundY - 80, w: 70, h: 80, vy: 0, gravity: 0.8, jumpForce: -14, grounded: true };
+    let obstacles = [];
+    let clouds = [];
+    let score = 0, highScore = 0;
+    let speed = 5;
+    let gameOver = false, started = false, obstacleCooldown = 0;
+
+    const rectsCollide = (a, b) =>
+      a.x + a.w * 0.6 > b.x && a.x + a.w * 0.4 < b.x + b.w &&
+      a.y + a.h * 0.8 > b.y && a.y + a.h * 0.2 < b.y + b.h;
+
+    // ====== Controls ======
+    function jump() {
+      if (!started) {
+        started = true;
+        gameOver = false;
+        score = 0;
+        obstacles = [];
+        clouds = [];
+        speed = 5;
+        obstacleCooldown = 0;
+        loop();
+      } else if (dino.grounded && !gameOver) {
+        dino.vy = dino.jumpForce;
+        dino.grounded = false;
+        jumpSound.currentTime = 0;
+        jumpSound.play();
+      }
+      if (gameOver) resetGame();
     }
-  }
 
-  window.addEventListener("keydown", e => {
-    if (["Space", "ArrowUp"].includes(e.code)) jump();
-  });
-  window.addEventListener("touchstart", jump);
-  window.addEventListener("mousedown", jump);
+    window.addEventListener("keydown", e => {
+      if (["Space", "ArrowUp"].includes(e.code)) jump();
+      if (e.code === "KeyR" && gameOver) resetGame();
+    });
+    window.addEventListener("touchstart", jump);
+    window.addEventListener("mousedown", jump);
 
-  function resetGame() {
-    gameOver = false;
-    started = false;
-    score = 0;
-    speed = 5;
-    obstacles = [];
-    dino.y = groundY - dino.h;
-    dino.vy = 0;
-    obstacleCooldown = 0;
-    draw();
-  }
-
-  // =====================
-  // MAIN LOOP
-  // =====================
-  function loop() {
-    update();
-    draw();
-    if (!gameOver) requestAnimationFrame(loop);
-  }
-
-  function update() {
-    dino.vy += dino.gravity;
-    dino.y += dino.vy;
-
-    if (dino.y >= groundY - dino.h) {
+    function resetGame() {
+      started = false;
+      gameOver = false;
+      obstacles = [];
+      clouds = [];
+      score = 0;
+      speed = 5;
       dino.y = groundY - dino.h;
       dino.vy = 0;
-      dino.grounded = true;
+      obstacleCooldown = 0;
+      loop();
     }
 
-    // Obstacles
-    if (obstacleCooldown <= 0 && Math.random() < 0.02) {
-      obstacles.push({
-        x: canvas.width,
-        y: groundY - 70,
-        w: 70,
-        h: 70
-      });
-      obstacleCooldown = 110 + Math.random() * 100;
-    } else obstacleCooldown--;
+    // ====== Main Loop ======
+    function loop() {
+      if (!started) { draw(); return; }
+      update();
+      draw();
+      if (!gameOver) requestAnimationFrame(loop);
+    }
 
-    obstacles.forEach(o => o.x -= speed);
-    obstacles = obstacles.filter(o => o.x + o.w > 0);
+    function update() {
+      dino.vy += dino.gravity;
+      dino.y += dino.vy;
+      if (dino.y >= groundY - dino.h) {
+        dino.y = groundY - dino.h;
+        dino.vy = 0;
+        dino.grounded = true;
+      }
 
-    // Collision
-    for (let o of obstacles) {
-      if (rectsCollide(dino, o)) {
-        gameOver = true;
-        if (score > highScore) highScore = score;
+      // Clouds
+      if (Math.random() < 0.01) {
+        clouds.push({ x: canvas.width, y: 40 + Math.random() * 80, w: 100, h: 60, speed: 2 + Math.random() });
+      }
+
+      clouds.forEach(c => c.x -= c.speed);
+      clouds = clouds.filter(c => c.x + c.w > 0);
+
+      // Flames
+      if (obstacleCooldown <= 0 && Math.random() < 0.02) {
+        obstacles.push({ x: canvas.width, y: groundY - 60, w: 70, h: 80 });
+        obstacleCooldown = 120 + Math.random() * 80;
+      } else obstacleCooldown--;
+
+      obstacles.forEach(o => o.x -= speed);
+      obstacles = obstacles.filter(o => o.x + o.w > 0);
+
+      for (let o of obstacles)
+        if (rectsCollide(dino, o)) {
+          if (!gameOver) loseSound.play();
+          gameOver = true;
+          if (score > highScore) highScore = score;
+        }
+
+      if (!gameOver) {
+        score += 0.05;
+        if (speed < 9) speed += 0.0005;
       }
     }
 
-    if (!gameOver) {
-      score += 0.05;
-      if (speed < 9) speed += 0.0004;
-    }
-  }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      groundY = canvas.height - 50;
 
-  // =============================
-  // DRAW NETHER BACKGROUND
-  // =============================
-  function drawNetherSky() {
-    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grad.addColorStop(0, "#2b0000");
-    grad.addColorStop(0.4, "#3c0000");
-    grad.addColorStop(1, "#1a0000");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
+      // ====== Sky ======
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, "#aee1f9");
+      grad.addColorStop(1, "#f7fbff");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // =============================
-  // RED MOON (FIXED VERSION)
-  // =============================
-  function drawRedMoon() {
-    const w = canvas.width;
-    const t = performance.now() * 0.001;
-
-    const cx = w * 0.78;
-    const cy = 90;
-    const moonR = 52 + Math.sin(t * 1.2) * 3;
-
-    // glow
-    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, moonR * 3);
-    g.addColorStop(0, "rgba(255,80,80,0.95)");
-    g.addColorStop(0.5, "rgba(180,20,20,0.22)");
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(cx, cy, moonR * 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    // moon
-    ctx.beginPath();
-    ctx.arc(cx, cy, moonR, 0, Math.PI * 2);
-    ctx.fillStyle = "#ff3333";
-    ctx.fill();
-  }
-
-  // =============================
-  // VOLCANOES + LAVA ANIMATION
-  // =============================
-  let lavaWave = 0;
-
-  function drawVolcanoes() {
-    lavaWave += 0.07;
-
-    function drawVolcano(xBase) {
-      const baseY = groundY;
-      ctx.fillStyle = "#330000";
+      // ====== Sun ======
       ctx.beginPath();
-      ctx.moveTo(xBase, baseY);
-      ctx.lineTo(xBase + 90, baseY - 140);
-      ctx.lineTo(xBase + 180, baseY);
+      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      ctx.fillStyle = "#FFD700";
       ctx.fill();
 
-      // Lava glow
-      ctx.globalAlpha = 0.7;
-      ctx.fillStyle = "rgb(" + (200 + Math.sin(lavaWave) * 40) + ",40,0)";
-      ctx.fillRect(xBase + 70, baseY - 140, 40, 25);
-      ctx.globalAlpha = 1;
-    }
+      // ====== Parallax Mountains ======
 
-    for (let x = -200; x < canvas.width + 200; x += 260) {
-      drawVolcano(x);
-    }
-  }
+      // FAR MOUNTAINS
+      mountainOffset1 -= mountainSpeed1;
+      if (mountainOffset1 <= -canvas.width) mountainOffset1 = 0;
 
-  // =============================
-  // DRAW EVERYTHING
-  // =============================
-  function draw() {
-    groundY = canvas.height - 60;
-
-    drawNetherSky();
-    drawRedMoon();
-    drawVolcanoes();
-
-    // Ground
-    ctx.fillStyle = "#2b0000";
-    ctx.fillRect(0, groundY, canvas.width, canvas.height-groundY);
-
-    // Obstacles
-    obstacles.forEach(o => {
-      if (flameImg.complete)
-        ctx.drawImage(flameImg, o.x, o.y, o.w, o.h);
-      else {
-        ctx.fillStyle = "red";
-        ctx.fillRect(o.x, o.y, o.w, o.h);
+      ctx.fillStyle = "#6E7A89";
+      function drawFarMountains(offset) {
+        ctx.beginPath();
+        ctx.moveTo(offset + 0, groundY);
+        ctx.lineTo(offset + 200, groundY - 120);
+        ctx.lineTo(offset + 400, groundY);
+        ctx.lineTo(offset + 600, groundY - 140);
+        ctx.lineTo(offset + 800, groundY);
+        ctx.closePath();
+        ctx.fill();
       }
-    });
+      drawFarMountains(mountainOffset1);
+      drawFarMountains(mountainOffset1 + canvas.width);
 
-    // Dino
-    if (dinoImg.complete)
-      ctx.drawImage(dinoImg, dino.x, dino.y, dino.w, dino.h);
-    else {
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
+      // NEAR MOUNTAINS
+      mountainOffset2 -= mountainSpeed2;
+      if (mountainOffset2 <= -canvas.width) mountainOffset2 = 0;
+
+      ctx.fillStyle = "#8B9AA3";
+      function drawNearMountains(offset) {
+        ctx.beginPath();
+        ctx.moveTo(offset + 0, groundY);
+        ctx.lineTo(offset + 250, groundY - 90);
+        ctx.lineTo(offset + 500, groundY);
+        ctx.lineTo(offset + 750, groundY - 110);
+        ctx.lineTo(offset + 900, groundY);
+        ctx.closePath();
+        ctx.fill();
+      }
+      drawNearMountains(mountainOffset2);
+      drawNearMountains(mountainOffset2 + canvas.width);
+
+      // ====== Clouds ======
+      clouds.forEach(c => {
+        if (cloudImg.complete && cloudImg.width > 0)
+          ctx.drawImage(cloudImg, c.x, c.y, c.w, c.h);
+        else {
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(c.x, c.y, c.w, c.h);
+        }
+      });
+
+      // ====== Ground ======
+      const groundHeight = 40;
+      ctx.fillStyle = "#8B4513";
+      ctx.fillRect(0, groundY, canvas.width, groundHeight);
+      ctx.fillStyle = "#A0522D";
+      ctx.fillRect(0, groundY, canvas.width, 8);
+
+      for (let i = 0; i < canvas.width / 15; i++) {
+        ctx.fillStyle = "#5C3317";
+        const rx = Math.random() * canvas.width;
+        const ry = groundY + 10 + Math.random() * 25;
+        ctx.beginPath();
+        ctx.arc(rx, ry, 2 + Math.random() * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // ====== Obstacles ======
+      obstacles.forEach(o => {
+        if (flameImg.complete && flameImg.width > 0)
+          ctx.drawImage(flameImg, o.x, o.y, o.w, o.h);
+        else {
+          ctx.fillStyle = "red";
+          ctx.fillRect(o.x, o.y, o.w, o.h);
+        }
+      });
+
+      // ====== Dino ======
+      if (dinoImg.complete && dinoImg.width > 0)
+        ctx.drawImage(dinoImg, dino.x, dino.y, dino.w, dino.h);
+      else {
+        ctx.fillStyle = "#333";
+        ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
+      }
+
+      // ====== Score Display ======
+      ctx.fillStyle = "#333";
+      ctx.font = `${Math.max(16, canvas.width / 40)}px Arial`;
+      ctx.fillText("Score: " + Math.floor(score), 20, 40);
+      ctx.fillText("High: " + Math.floor(highScore), canvas.width - 140, 40);
+
+      if (gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,0.6)";
+        ctx.font = `${Math.max(20, canvas.width / 30)}px Arial`;
+        ctx.fillText("🔥 Game Over!", canvas.width / 2 - 90, canvas.height / 2);
+        ctx.font = `${Math.max(14, canvas.width / 50)}px Arial`;
+        ctx.fillText("Tap anywhere to restart", canvas.width / 2 - 90, canvas.height / 2 + 30);
+      } else if (!started) {
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.font = `${Math.max(16, canvas.width / 40)}px Arial`;
+        ctx.fillText("Tap or Press Space to Start", canvas.width / 2 - 130, canvas.height / 2);
+      }
     }
 
-    // TEXT
-    ctx.fillStyle = "#fff";
-    ctx.font = "26px monospace";
-    ctx.fillText("Score: " + Math.floor(score), 20, 40);
-    ctx.fillText("High: " + Math.floor(highScore), canvas.width - 160, 40);
-
-    if (gameOver) {
-      ctx.fillStyle = "rgba(0,0,0,0.6)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#ff4444";
-      ctx.font = "40px monospace";
-      ctx.fillText("GAME OVER", canvas.width / 2 - 130, canvas.height / 2);
-      ctx.font = "20px monospace";
-      ctx.fillText("Tap to Restart", canvas.width / 2 - 80, canvas.height / 2 + 40);
-    }
-
-    if (!started && !gameOver) {
-      ctx.fillStyle = "#ffffffaa";
-      ctx.font = "26px monospace";
-      ctx.fillText("Tap or Press Space to Start",
-                   canvas.width/2 - 170, canvas.height/2);
-    }
-  }
-
-  draw();
-})();
-</script>
-
+    draw();
+  })();
+  </script>
 </body>
 </html>
