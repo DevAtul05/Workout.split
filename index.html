@@ -47,8 +47,14 @@
     const cloudImg = new Image();
     cloudImg.src = "cloud.png";
 
-    flameImg.onload = () => console.log("🔥 Flame loaded!");
-    flameImg.onerror = () => console.error("❌ Flame image not found — check filename/path.");
+    // ====== Parallax Variables ======
+    let mountainOffset1 = 0;
+    let mountainOffset2 = 0;
+    const mountainSpeed1 = 0.2;   // far mountains
+    const mountainSpeed2 = 0.5;   // near mountains
+    const sunX = 100;
+    const sunY = 80;
+    const sunRadius = 35;
 
     // ====== Sounds ======
     const jumpSound = new Audio("jump.mp3");
@@ -63,7 +69,6 @@
     let speed = 5;
     let gameOver = false, started = false, obstacleCooldown = 0;
 
-    // ====== Utilities ======
     const rectsCollide = (a, b) =>
       a.x + a.w * 0.6 > b.x && a.x + a.w * 0.4 < b.x + b.w &&
       a.y + a.h * 0.8 > b.y && a.y + a.h * 0.2 < b.y + b.h;
@@ -125,16 +130,15 @@
         dino.grounded = true;
       }
 
-      // Spawn clouds
+      // Clouds
       if (Math.random() < 0.01) {
         clouds.push({ x: canvas.width, y: 40 + Math.random() * 80, w: 100, h: 60, speed: 2 + Math.random() });
       }
 
-      // Move clouds
       clouds.forEach(c => c.x -= c.speed);
       clouds = clouds.filter(c => c.x + c.w > 0);
 
-      // Spawn flame obstacles
+      // Flames
       if (obstacleCooldown <= 0 && Math.random() < 0.02) {
         obstacles.push({ x: canvas.width, y: groundY - 60, w: 70, h: 80 });
         obstacleCooldown = 120 + Math.random() * 80;
@@ -143,7 +147,6 @@
       obstacles.forEach(o => o.x -= speed);
       obstacles = obstacles.filter(o => o.x + o.w > 0);
 
-      // Collisions
       for (let o of obstacles)
         if (rectsCollide(dino, o)) {
           if (!gameOver) loseSound.play();
@@ -161,14 +164,58 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       groundY = canvas.height - 50;
 
-      // Sky
+      // ====== Sky ======
       const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
       grad.addColorStop(0, "#aee1f9");
       grad.addColorStop(1, "#f7fbff");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Clouds
+      // ====== Sun ======
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      ctx.fillStyle = "#FFD700";
+      ctx.fill();
+
+      // ====== Parallax Mountains ======
+
+      // FAR MOUNTAINS
+      mountainOffset1 -= mountainSpeed1;
+      if (mountainOffset1 <= -canvas.width) mountainOffset1 = 0;
+
+      ctx.fillStyle = "#6E7A89";
+      function drawFarMountains(offset) {
+        ctx.beginPath();
+        ctx.moveTo(offset + 0, groundY);
+        ctx.lineTo(offset + 200, groundY - 120);
+        ctx.lineTo(offset + 400, groundY);
+        ctx.lineTo(offset + 600, groundY - 140);
+        ctx.lineTo(offset + 800, groundY);
+        ctx.closePath();
+        ctx.fill();
+      }
+      drawFarMountains(mountainOffset1);
+      drawFarMountains(mountainOffset1 + canvas.width);
+
+      // NEAR MOUNTAINS
+      mountainOffset2 -= mountainSpeed2;
+      if (mountainOffset2 <= -canvas.width) mountainOffset2 = 0;
+
+      ctx.fillStyle = "#8B9AA3";
+      function drawNearMountains(offset) {
+        ctx.beginPath();
+        ctx.moveTo(offset + 0, groundY);
+        ctx.lineTo(offset + 250, groundY - 90);
+        ctx.lineTo(offset + 500, groundY);
+        ctx.lineTo(offset + 750, groundY - 110);
+        ctx.lineTo(offset + 900, groundY);
+        ctx.closePath();
+        ctx.fill();
+      }
+      drawNearMountains(mountainOffset2);
+      drawNearMountains(mountainOffset2 + canvas.width);
+
+      // ====== Clouds ======
       clouds.forEach(c => {
         if (cloudImg.complete && cloudImg.width > 0)
           ctx.drawImage(cloudImg, c.x, c.y, c.w, c.h);
@@ -178,29 +225,23 @@
         }
       });
 
-      // Ground
-     // Ground (Brown Dirt)
-const groundHeight = 40;
+      // ====== Ground ======
+      const groundHeight = 40;
+      ctx.fillStyle = "#8B4513";
+      ctx.fillRect(0, groundY, canvas.width, groundHeight);
+      ctx.fillStyle = "#A0522D";
+      ctx.fillRect(0, groundY, canvas.width, 8);
 
-ctx.fillStyle = "#8B4513"; // brown main ground
-ctx.fillRect(0, groundY, canvas.width, groundHeight);
+      for (let i = 0; i < canvas.width / 15; i++) {
+        ctx.fillStyle = "#5C3317";
+        const rx = Math.random() * canvas.width;
+        const ry = groundY + 10 + Math.random() * 25;
+        ctx.beginPath();
+        ctx.arc(rx, ry, 2 + Math.random() * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
-// Top soil line
-ctx.fillStyle = "#A0522D";
-ctx.fillRect(0, groundY, canvas.width, 8);
-
-// Textured dots (small rocks)
-for (let i = 0; i < canvas.width / 15; i++) {
-  ctx.fillStyle = "#5C3317";
-  const rx = Math.random() * canvas.width;
-  const ry = groundY + 10 + Math.random() * 25;
-  ctx.beginPath();
-  ctx.arc(rx, ry, 2 + Math.random() * 2, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-
-      // Obstacles (Flames)
+      // ====== Obstacles ======
       obstacles.forEach(o => {
         if (flameImg.complete && flameImg.width > 0)
           ctx.drawImage(flameImg, o.x, o.y, o.w, o.h);
@@ -210,7 +251,7 @@ for (let i = 0; i < canvas.width / 15; i++) {
         }
       });
 
-      // Dino
+      // ====== Dino ======
       if (dinoImg.complete && dinoImg.width > 0)
         ctx.drawImage(dinoImg, dino.x, dino.y, dino.w, dino.h);
       else {
@@ -218,7 +259,7 @@ for (let i = 0; i < canvas.width / 15; i++) {
         ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
       }
 
-      // Score
+      // ====== Score Display ======
       ctx.fillStyle = "#333";
       ctx.font = `${Math.max(16, canvas.width / 40)}px Arial`;
       ctx.fillText("Score: " + Math.floor(score), 20, 40);
@@ -242,8 +283,3 @@ for (let i = 0; i < canvas.width / 15; i++) {
   </script>
 </body>
 </html>
-
-
-
-
-
